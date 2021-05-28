@@ -17,14 +17,14 @@ This is also an example of how to use [gomarkdown/markdown](https://github.com/g
 Added 2 functions to the project :
 
 * [Possibility to generate the html with the github design (-cssgh option)](https://github.com/sindresorhus/github-markdown-css)
-* Possibility to generate a PDF
+* Possibility to generate a PDF (Need wkhtmltopdf)
 
 The code will be improved in the future...
 
 You can use this README to test the utility.
 
 ```
-mdtohtml -cssgh README.md README.pdf
+mdtohtml -cssgh README.md README.pdf      # Need wkhtmltopdf 
 mdtohtml -cssgh README.md README.html
 ```
 
