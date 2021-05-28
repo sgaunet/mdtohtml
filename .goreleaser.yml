@@ -9,13 +9,14 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
+    dir: src
     goos:
       - linux
       #- windows
       - darwin
-    # hooks:
-    #   post:
-    #     - upx "{{ .Path }}"
+    hooks:
+      post:
+        - upx "{{ .Path }}"
 archives:
   - replacements:
       darwin: Darwin
