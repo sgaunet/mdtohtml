@@ -4,11 +4,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
 	"os"
-	"path/filepath"
+	"strings"
 
 	_ "embed"
 
@@ -23,23 +21,12 @@ const defaultTitle = ""
 var cssgithub string
 
 func main() {
-	var cssgh, page, toc, xhtml, latex, smartypants, latexdashes, fractions bool
-	flag.BoolVar(&page, "page", false,
-		"Generate a standalone HTML page (implies -latex=false)")
-	flag.BoolVar(&toc, "toc", false,
-		"Generate a table of contents (implies -latex=false)")
-	flag.BoolVar(&xhtml, "xhtml", true,
-		"Use XHTML-style tags in HTML output")
-	flag.BoolVar(&cssgh, "cssgh", true,
-		"Github style")
-	//flag.BoolVar(&latex, "latex", false,
-	//	"Generate LaTeX output instead of HTML")
-	flag.BoolVar(&smartypants, "smartypants", true,
-		"Apply smartypants-style substitutions")
-	flag.BoolVar(&latexdashes, "latexdashes", true,
-		"Use LaTeX-style dash rules for smartypants")
-	flag.BoolVar(&fractions, "fractions", true,
-		"Use improved fraction rules for smartypants")
+	var page, toc, smartypants, latexdashes, fractions bool
+	flag.BoolVar(&page, "page", false, "Generate a standalone HTML page")
+	flag.BoolVar(&toc, "toc", false, "Generate a table of contents")
+	flag.BoolVar(&smartypants, "smartypants", true, "Apply smartypants-style substitutions")
+	flag.BoolVar(&latexdashes, "latexdashes", true, "Use LaTeX-style dash rules for smartypants")
+	flag.BoolVar(&fractions, "fractions", true, "Use improved fraction rules for smartypants")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Markdown Processor "+
 			"\nAvailable at http://github.com/gomarkdown/markdown/cmd/mdtohtml\n\n"+
@@ -55,15 +42,7 @@ func main() {
 	flag.Parse()
 
 	// enforce implied options
-	if cssgh {
-		page = true
-	}
-	if page {
-		latex = false
-	}
-	if toc {
-		latex = false
-	}
+	page = true
 
 	// read the input
 	var input []byte
@@ -77,14 +56,6 @@ func main() {
 
 	inputFilePath := args[0]
 	outputFilePath := args[1]
-
-	// Create temporary file
-	inputDir := filepath.Dir(args[0])
-	tmpFile, err := ioutil.TempFile(inputDir, "mdtohtml-")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(tmpFile.Name())
 
 	if input, err = ioutil.ReadFile(inputFilePath); err != nil {
 		fmt.Fprintln(os.Stderr, "Error reading from", inputFilePath, ":", err)
@@ -100,172 +71,67 @@ func main() {
 		parser.SpaceHeadings
 
 	var renderer markdown.Renderer
-	if latex {
-		// render the data into LaTeX
-		//renderer = markdown.LatexRenderer(0)
-	} else {
-		// render the data into HTML
-		var htmlFlags html.Flags
-		if xhtml {
-			htmlFlags |= html.UseXHTML
-		}
-		if smartypants {
-			htmlFlags |= html.Smartypants
-		}
-		if fractions {
-			htmlFlags |= html.SmartypantsFractions
-		}
-		if latexdashes {
-			htmlFlags |= html.SmartypantsLatexDashes
-		}
-		title := ""
-		if page {
-			htmlFlags |= html.CompletePage
-			title = getTitle(input)
-		}
-		if toc {
-			htmlFlags |= html.TOC
-		}
-		params := html.RendererOptions{
-			Flags: htmlFlags,
-			Title: title,
-			//CSS:   css,
-		}
-		renderer = html.NewRenderer(params)
+
+	// render the data into HTML
+	var htmlFlags html.Flags
+	htmlFlags |= html.UseXHTML
+	if smartypants {
+		htmlFlags |= html.Smartypants
 	}
+	if fractions {
+		htmlFlags |= html.SmartypantsFractions
+	}
+	if latexdashes {
+		htmlFlags |= html.SmartypantsLatexDashes
+	}
+	title := ""
+	if page {
+		htmlFlags |= html.CompletePage
+		title = getTitle(input)
+	}
+	if toc {
+		htmlFlags |= html.TOC
+	}
+	params := html.RendererOptions{
+		Flags: htmlFlags,
+		Title: title,
+		//CSS:   css,
+	}
+	renderer = html.NewRenderer(params)
 
 	// parse and render
-	var output []byte
+	var output string
 	parser := parser.NewWithExtensions(extensions)
-	output = markdown.ToHTML(input, parser, renderer)
+	output = string(markdown.ToHTML(input, parser, renderer))
+
+	// Add css github style
+	var outputCssGitHub string
+	reader := bufio.NewScanner(strings.NewReader(output))
+	for reader.Scan() {
+		if reader.Text() == "</head>" {
+			for _, i := range [3]string{"<style>", cssgithub, "</style>"} {
+				outputCssGitHub = outputCssGitHub + i + "\n"
+			}
+		}
+		outputCssGitHub = outputCssGitHub + reader.Text() + "\n"
+	}
+	err = reader.Err()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error : %v", err)
+		os.Exit(-1)
+	}
+	output = outputCssGitHub
 
 	// output the result
 	var out *os.File
-	if len(args) == 2 {
-		if out, err = os.Create(tmpFile.Name()); err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating %s: %v", tmpFile.Name(), err)
-			os.Exit(-1)
-		}
-		defer out.Close()
-	} else {
-		out = os.Stdout
+	if out, err = os.Create(outputFilePath); err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating %s: %v", outputFilePath, err)
+		os.Exit(-1)
 	}
+	defer out.Close()
 
-	if _, err = out.Write(output); err != nil {
+	if _, err = out.WriteString(output); err != nil {
 		fmt.Fprintln(os.Stderr, "Error writing output:", err)
-		os.Exit(-1)
-	}
-	out.Close()
-
-	// html with github-markdown.css
-	if cssgh && len(args) == 2 {
-		tmpFile2, err := ioutil.TempFile(inputDir, "mdtohtml-")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer os.Remove(tmpFile2.Name())
-
-		file, err := os.Open(tmpFile.Name())
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-
-		f, err := os.Create(tmpFile2.Name())
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		defer f.Close()
-
-		// Start reading from the file with a reader.
-		reader := bufio.NewReader(file)
-		var line string
-		for {
-			line, err = reader.ReadString('\n')
-			if err != nil && err != io.EOF {
-				break
-			}
-
-			if line == "</head>\n" {
-				for _, i := range [3]string{"<style>", cssgithub, "</style>"} {
-					_, err2 := f.WriteString(i)
-
-					if err2 != nil {
-						log.Fatal(err2)
-					}
-				}
-			}
-			_, err2 := f.WriteString(line)
-
-			if err2 != nil {
-				log.Fatal(err2)
-			}
-
-			if err != nil {
-				break
-			}
-		}
-		if err != io.EOF {
-			fmt.Printf(" > Failed with error: %v\n", err)
-			panic(err)
-		}
-
-		err = f.Close()
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-		err = file.Close()
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-
-		// err = os.Rename(tmpFile2.Name(), tmpFile.Name())
-		// if err != nil {
-		// 	fmt.Fprintf(os.Stderr, "Error renaming %s to %s : %v", tmpFile2.Name(), tmpFile.Name(), err)
-		// 	os.Exit(1)
-		// }
-		if input, err = ioutil.ReadFile(tmpFile2.Name()); err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading from", tmpFile.Name(), ":", err)
-			os.Exit(-1)
-		}
-
-		out2, err := os.Create(tmpFile.Name())
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating %s: %v", tmpFile.Name(), err)
-			os.Exit(-1)
-		}
-		if _, err = out2.Write(input); err != nil {
-			fmt.Fprintln(os.Stderr, "Error writing output:", err)
-			os.Exit(-1)
-		}
-		out2.Close()
-		tmpFile2.Close()
-		os.Remove(tmpFile2.Name())
-	}
-
-	if input, err = ioutil.ReadFile(tmpFile.Name()); err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading from", tmpFile.Name(), ":", err)
-		os.Exit(-1)
-	}
-
-	out2, err := os.Create(outputFilePath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating %s: %v", tmpFile.Name(), err)
-		os.Exit(-1)
-	}
-	if _, err = out2.Write(input); err != nil {
-		fmt.Fprintln(os.Stderr, "Error writing output:", err)
-		os.Exit(-1)
-	}
-	out2.Close()
-	err = tmpFile.Close()
-	err = os.Remove(tmpFile.Name())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error deleting %s : %s \n", tmpFile.Name(), err)
 		os.Exit(-1)
 	}
 }
