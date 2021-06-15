@@ -12,7 +12,7 @@ builds:
     dir: src
     goos:
       - linux
-      #- windows
+      - windows
       - darwin
     hooks:
       post:
