@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
 
 	_ "embed"
@@ -92,7 +93,8 @@ func main() {
 	outputFilePath := args[1]
 
 	// Create temporary file
-	tmpFile, err := ioutil.TempFile("/tmp", "mdtohtml-")
+	inputDir := filepath.Dir(args[0])
+	tmpFile, err := ioutil.TempFile(inputDir, "mdtohtml-")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -167,10 +169,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Error writing output:", err)
 		os.Exit(-1)
 	}
+	out.Close()
 
 	// html with github-markdown.css
 	if cssgh && len(args) == 2 {
-		tmpFile2, err := ioutil.TempFile("/tmp", "mdtohtml-")
+		tmpFile2, err := ioutil.TempFile(inputDir, "mdtohtml-")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -223,24 +226,60 @@ func main() {
 			panic(err)
 		}
 
-		f.Close()
-		err = os.Rename(tmpFile2.Name(), tmpFile.Name())
+		err = f.Close()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error renaming %s to %s : %v", tmpFile2.Name(), tmpFile.Name(), err)
+			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+		err = file.Close()
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
+		// err = os.Rename(tmpFile2.Name(), tmpFile.Name())
+		// if err != nil {
+		// 	fmt.Fprintf(os.Stderr, "Error renaming %s to %s : %v", tmpFile2.Name(), tmpFile.Name(), err)
+		// 	os.Exit(1)
+		// }
+		if input, err = ioutil.ReadFile(tmpFile2.Name()); err != nil {
+			fmt.Fprintln(os.Stderr, "Error reading from", tmpFile.Name(), ":", err)
+			os.Exit(-1)
+		}
+
+		out2, err := os.Create(tmpFile.Name())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating %s: %v", tmpFile.Name(), err)
+			os.Exit(-1)
+		}
+		if _, err = out2.Write(input); err != nil {
+			fmt.Fprintln(os.Stderr, "Error writing output:", err)
+			os.Exit(-1)
+		}
+		out2.Close()
+		tmpFile2.Close()
+		os.Remove(tmpFile2.Name())
 	}
-	if isExtensionPDF(outputFilePath) {
-		err = createPDF(tmpFile.Name(), outputFilePath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating %s: %v", outputFilePath, err)
-			os.Exit(1)
-		}
-	} else {
-		err = os.Rename(tmpFile.Name(), outputFilePath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating %s: %v", outputFilePath, err)
-			os.Exit(1)
-		}
+
+	if input, err = ioutil.ReadFile(tmpFile.Name()); err != nil {
+		fmt.Fprintln(os.Stderr, "Error reading from", tmpFile.Name(), ":", err)
+		os.Exit(-1)
+	}
+
+	out2, err := os.Create(outputFilePath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating %s: %v", tmpFile.Name(), err)
+		os.Exit(-1)
+	}
+	if _, err = out2.Write(input); err != nil {
+		fmt.Fprintln(os.Stderr, "Error writing output:", err)
+		os.Exit(-1)
+	}
+	out2.Close()
+	err = tmpFile.Close()
+	err = os.Remove(tmpFile.Name())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error deleting %s : %s \n", tmpFile.Name(), err)
+		os.Exit(-1)
 	}
 }
