@@ -14,34 +14,35 @@ This is also an example of how to use [gomarkdown/markdown](https://github.com/g
 
 # Forked project
 
-Added 2 functions to the project :
-
-* [Possibility to generate the html with the github design (-cssgh option)](https://github.com/sindresorhus/github-markdown-css)
-* Possibility to generate a PDF (Need wkhtmltopdf)
+Add the [Possibility to generate the html with the github design (-cssgh option)](https://github.com/sindresorhus/github-markdown-css)
 
 The code will be improved in the future...
 
-You can use this README to test the utility.
+You can use this README to test the app.
 
 ```
-mdtohtml -cssgh README.md README.pdf      # Need wkhtmltopdf 
 mdtohtml -cssgh README.md README.html
 ```
 
 # Examples for the tests
 
+
+## Table
+
 Header1   | Header2              | Header3
 --------- | -------------------- | --------------------
-12        | with newline<br>here | Value
-Value1    | Value2               | Value3
+12        | with newline<br><span style="color:red">here</span> | Value
+Value1    | Value2               | <span style="color:green">Value3</span>
 Value1    | Value2               | Value3
 Value1    | Value2               | Value3
 Value1    | Value2               | Value3
 
-Here a list :
+## List 
+
+**Here a list :**
 
 * Point1
-* Point2
+* <span style="color:blue">Point2</span>
     * Subpoint 1
     * Subpoint 2
     * SubPoint 3
@@ -49,3 +50,6 @@ Here a list :
 * ~~Point3~~
 
 
+## Image
+
+![Example](img/Logo-Docker-.jpg)
