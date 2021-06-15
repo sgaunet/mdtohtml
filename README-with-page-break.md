@@ -2,7 +2,7 @@
 
 If you have Go installed, install with:
 
-    go get -u github.com/sgaunet/mdtohtml
+    go get -u github.com/gomarkdown/mdtohtml
 
 To run:
 
@@ -12,15 +12,21 @@ Run `mdtohtml` to see all options.
 
 This is also an example of how to use [gomarkdown/markdown](https://github.com/gomarkdown/markdown) library.
 
+<div style = "display:block; clear:both; page-break-after:always;"></div>
+
 # Forked project
 
-I clean some code, remove some option and add [the github-markdown CSS](https://github.com/sindresorhus/github-markdown-css)
+Add the [Possibility to generate the html with the github design (-cssgh option)](https://github.com/sindresorhus/github-markdown-css)
+
+The code will be improved in the future...
 
 You can use this README to test the app.
 
 ```
-mdtohtml README.md README.html
+mdtohtml -cssgh README.md README.html
 ```
+
+<div style = "display:block; clear:both; page-break-after:always;"></div>
 
 # Examples for the tests
 
@@ -51,20 +57,3 @@ Value1    | Value2               | Value3
 ## Image
 
 ![Example](img/Logo-Docker-.jpg)
-
-## Page break
-
-You can add page-break by adding this html code :
-
-```
-<div style = "display:block; clear:both; page-break-after:always;"></div>
-```
-
-It will be interpreted when using wkhtmltopdf to generate a PDF.
-
-Check with README-with-page-break.md file.
-
-```
-mdtohtml ../README-with-page-break.md ../README-with-page.break.html
-wkhtmltopdf ../README-with-page.break.html ../README-with-page.break.pdf
-```
