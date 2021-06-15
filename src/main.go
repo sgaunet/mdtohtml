@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime/pprof"
 
 	_ "embed"
 
@@ -25,7 +24,6 @@ var cssgithub string
 
 func main() {
 	var cssgh, page, toc, xhtml, latex, smartypants, latexdashes, fractions bool
-	var css, cpuprofile string
 	flag.BoolVar(&page, "page", false,
 		"Generate a standalone HTML page (implies -latex=false)")
 	flag.BoolVar(&toc, "toc", false,
@@ -42,8 +40,6 @@ func main() {
 		"Use LaTeX-style dash rules for smartypants")
 	flag.BoolVar(&fractions, "fractions", true,
 		"Use improved fraction rules for smartypants")
-	flag.StringVar(&cpuprofile, "cpuprofile", "",
-		"Write cpu profile to a file")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Markdown Processor "+
 			"\nAvailable at http://github.com/gomarkdown/markdown/cmd/mdtohtml\n\n"+
@@ -51,7 +47,7 @@ func main() {
 			"Copyright © 2018 Krzysztof Kowalczyk <https://blog.kowalczyk.info>\n"+
 			"Distributed under the Simplified BSD License\n"+
 			"Usage:\n"+
-			"  %s [options] [inputfile [outputfile]]\n\n"+
+			"  %s [options] inputfile outputfile\n\n"+
 			"Options:\n",
 			os.Args[0])
 		flag.PrintDefaults()
@@ -59,7 +55,7 @@ func main() {
 	flag.Parse()
 
 	// enforce implied options
-	if css != "" || cssgh {
+	if cssgh {
 		page = true
 	}
 	if page {
@@ -67,16 +63,6 @@ func main() {
 	}
 	if toc {
 		latex = false
-	}
-
-	// turn on profiling?
-	if cpuprofile != "" {
-		f, err := os.Create(cpuprofile)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
 	}
 
 	// read the input
@@ -143,7 +129,7 @@ func main() {
 		params := html.RendererOptions{
 			Flags: htmlFlags,
 			Title: title,
-			CSS:   css,
+			//CSS:   css,
 		}
 		renderer = html.NewRenderer(params)
 	}
