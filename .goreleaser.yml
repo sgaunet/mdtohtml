@@ -34,3 +34,42 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+dockers:
+  # You can have multiple Docker images.
+  -
+    # GOOS of the built binaries/packages that should be used.
+    goos: linux
+    ids:
+    - mdtohtml
+    # GOARCH of the built binaries/packages that should be used.
+    goarch: amd64
+    # Templates of the Docker image names.
+    image_templates:
+    - "sgaunet/mdtohtml:latest"
+    - "sgaunet/mdtohtml:{{ .Tag }}"
+    #- "sgaunet/mdtohtml:v{{ .Major }}"
+    # build_flag_templates:
+    #   - "--pull"
+    #   - "--label=org.label-schema.build-date={{.Date}}" 
+    #   - "--label=org.label-schema.name={{ .ProjectName }}"
+    #   - "--label=org.label-schema.url='{{ .GitURL }}'" 
+    #   - "--label=org.label-schema.vcs-ref={{ .ShortCommit }}"
+    #   - "--label=org.label-schema.vcs-url='{{ .GitURL }}'" 
+    #   - "--label=org.label-schema.vendor='hack_and_sla.sh'" 
+    #   - "--label=org.label-schema.version={{ .Version }}"
+    #   - "--label=org.label-schema.schema-version=1.0"
+    #   - "--build-arg=BIN={{ .ProjectName }}"
+
+    # Skips the docker push. Could be useful if you also do draft releases.
+    # If set to auto, the release will not be pushed to the docker repository
+    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    # Defaults to false.
+    #skip_push: false
+
+    # Path to the Dockerfile (from the project root).
+    dockerfile: Dockerfile
+    extra_files:
+    - src
+    - go.mod
+    - go.sum

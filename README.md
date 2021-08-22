@@ -14,12 +14,29 @@ This is also an example of how to use [gomarkdown/markdown](https://github.com/g
 
 # Forked project
 
-I clean some code, remove some option and add [the github-markdown CSS](https://github.com/sindresorhus/github-markdown-css)
+I clean some code, remove some options and add [the github-markdown CSS](https://github.com/sindresorhus/github-markdown-css)
 
 You can use this README to test the app.
 
 ```
 mdtohtml README.md README.html
+```
+
+
+# Docker Image
+
+Now there is a docker image to integrate the binary into your own docker image for example.
+
+For example, the Dockerfile should look like :
+
+```
+FROM sgaunet/mdtohtml:0.3.1 AS mdtohtml
+
+FROM <BASE-IMAGE:VERSION>
+...
+COPY --from=mdtohtml /usr/bin/mdtohtml /usr/bin/mdtohtml
+...
+
 ```
 
 # Examples for the tests
