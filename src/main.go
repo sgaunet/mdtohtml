@@ -20,13 +20,21 @@ const defaultTitle = ""
 //go:embed github-markdown.css
 var cssgithub string
 
+var version string = "development"
+
+func printVersion() {
+	fmt.Println(version)
+}
+
 func main() {
-	var page, toc, smartypants, latexdashes, fractions bool
+	var page, toc, smartypants, latexdashes, fractions, vOption bool
 	flag.BoolVar(&page, "page", false, "Generate a standalone HTML page")
 	flag.BoolVar(&toc, "toc", false, "Generate a table of contents")
 	flag.BoolVar(&smartypants, "smartypants", true, "Apply smartypants-style substitutions")
 	flag.BoolVar(&latexdashes, "latexdashes", true, "Use LaTeX-style dash rules for smartypants")
 	flag.BoolVar(&fractions, "fractions", true, "Use improved fraction rules for smartypants")
+	flag.BoolVar(&vOption, "v", false, "Get version")
+
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Markdown Processor "+
 			"\nAvailable at http://github.com/gomarkdown/markdown/cmd/mdtohtml\n\n"+
@@ -40,6 +48,11 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	if vOption {
+		printVersion()
+		os.Exit(0)
+	}
 
 	// enforce implied options
 	page = true
