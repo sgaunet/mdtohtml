@@ -3,7 +3,7 @@
 before:
   hooks:
     # You may remove this if you don't use go modules.
-    #- go mod download
+    - go mod download
     # you may remove this if you don't need go generate
     #- go generate ./...
 builds:
@@ -11,21 +11,32 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -X main.version={{.Version}}
-    dir: src
     goos:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    dir: src
     hooks:
       post:
         - upx "{{ .Path }}"
 archives:
-  - replacements:
+  - name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
       386: i386
       amd64: x86_64
+    format_overrides:
+    - goos: windows
+      format: zip
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -36,6 +47,7 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
 
 dockers:
   # You can have multiple Docker images.
