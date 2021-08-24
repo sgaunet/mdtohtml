@@ -2,7 +2,7 @@
 
 IMG="sgaunet/mdtohtml:latest"
 
-docker build . -t "$IMG"
+docker build --build-arg="VERSION=development" . -t "$IMG"
 rc=$?
 
 if [ "$rc" != "0" ]

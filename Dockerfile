@@ -1,6 +1,8 @@
 FROM golang:1.16.7-alpine AS builder
 LABEL stage=builder
 
+ARG VERSION
+
 RUN apk add --no-cache git upx
 ENV GOPATH /go
 COPY src/ /go/src/
@@ -10,7 +12,7 @@ WORKDIR /go/src/
 
 RUN echo $GOPATH
 RUN go get 
-RUN CGO_ENABLED=0 GOOS=linux go build . 
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.version=$VERSION" .
 RUN upx mdtohtml
 
 
