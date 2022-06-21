@@ -7,22 +7,35 @@ before:
     # you may remove this if you don't need go generate
     #- go generate ./...
 builds:
+  - id: win
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -X main.version={{.Version}}
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "6"
+      - "7"
   - env:
       - CGO_ENABLED=0
     ldflags:
       - -X main.version={{.Version}}
     goos:
       - linux
-      - windows
       - darwin
     goarch:
       - amd64
       - arm
       - arm64
     goarm:
-      - 6
-      - 7
-    dir: src
+      - "6"
+      - "7"
+    # dir: src
     hooks:
       post:
         - upx "{{ .Path }}"
@@ -85,6 +98,6 @@ dockers:
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
     extra_files:
-    - src
+    # - src
     - go.mod
     - go.sum
