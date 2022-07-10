@@ -101,3 +101,14 @@ dockers:
     # - src
     - go.mod
     - go.sum
+
+brews:
+  - homepage: 'https://github.com/sgaunet/mdtohtml'
+    description: 'markdown to html converter (with github css style)'
+    folder: Formula
+    commit_author:
+      name: sgaunet
+      email: sgaunet@gmail.com
+    tap:
+      owner: sgaunet
+      name: mdtohtml
