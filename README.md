@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/sgaunet/mdtohtml)](https://goreportcard.com/report/github.com/sgaunet/mdtohtml)
+
 # Markdown to HTML cmd-line tool
 
 Tool to convert markdown file to html with a css like github.
