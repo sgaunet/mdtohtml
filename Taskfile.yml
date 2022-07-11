@@ -1,0 +1,37 @@
+# https://taskfile.dev
+version: '3'
+vars:
+  BINFILE: mdtohtml
+  IMG: sgaunet/mdtohtml:latest
+
+tasks:
+  default:
+    cmds:
+      - go mod tidy
+      - go mod download
+      - CGO_ENABLED=0 go build .
+      - upx ./{{.BINFILE}}
+    # silent: true
+    sources:
+    - "*.go"
+    - go*
+    method: checksum
+    generates:
+      - "{{.BINFILE}}"
+
+  image:
+    deps: 
+    - default
+    sources:
+      - ./**/*
+    cmds:
+      - docker build . -t {{.IMG}}
+      - docker push {{.IMG}}
+
+  snapshot:
+    cmds:
+      - GITLAB_TOKEN="" goreleaser --rm-dist --snapshot
+    
+  release:
+    cmds:
+      - GITLAB_TOKEN="" goreleaser --rm-dist
