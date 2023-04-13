@@ -30,8 +30,8 @@ tasks:
 
   snapshot:
     cmds:
-      - GITLAB_TOKEN="" goreleaser --rm-dist --snapshot
+      - GITLAB_TOKEN="" goreleaser --clean --snapshot
     
   release:
     cmds:
-      - GITLAB_TOKEN="" goreleaser --rm-dist
+      - GITLAB_TOKEN="" goreleaser --clean
