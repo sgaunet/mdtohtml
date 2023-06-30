@@ -39,17 +39,11 @@ builds:
     hooks:
       post:
         - upx "{{ .Path }}"
+
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
-    replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
-    format_overrides:
-    - goos: windows
-      format: zip
+    format: binary
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -203,7 +197,7 @@ nfpms:
 
     # Version Epoch.
     # Default is extracted from `version` if it is semver compatible.
-    epoch: 2
+    epoch: "2"
 
     # Version Prerelease.
     # Default is extracted from `version` if it is semver compatible.
@@ -215,7 +209,7 @@ nfpms:
     # version_metadata: git
 
     # Version Release.
-    release: 1
+    release: "1"
 
     # Section.
     section: default
