@@ -1,4 +1,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sgaunet/mdtohtml)](https://goreportcard.com/report/github.com/sgaunet/mdtohtml)
+[![GitHub release](https://img.shields.io/github/release/sgaunet/mdtohtml.svg)](https://github.com/sgaunet/mdtohtml/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sgaunet/mdtohtml)](https://goreportcard.com/report/github.com/sgaunet/mdtohtml)
+![GitHub Downloads](https://img.shields.io/github/downloads/sgaunet/mdtohtml/total)
 
 # Markdown to HTML cmd-line tool
 
