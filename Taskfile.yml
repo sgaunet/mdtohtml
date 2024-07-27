@@ -6,27 +6,16 @@ vars:
 
 tasks:
   default:
+    desc: "List all tasks"
+    cmds:
+      - task -a
+
+  build:
+    desc: "Build the binary"
     cmds:
       - go mod tidy
       - go mod download
       - CGO_ENABLED=0 go build .
-      - upx ./{{.BINFILE}}
-    # silent: true
-    sources:
-    - "*.go"
-    - go*
-    method: checksum
-    generates:
-      - "{{.BINFILE}}"
-
-  image:
-    deps: 
-    - default
-    sources:
-      - ./**/*
-    cmds:
-      - docker build . -t {{.IMG}}
-      - docker push {{.IMG}}
 
   snapshot:
     cmds:
