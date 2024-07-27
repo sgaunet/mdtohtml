@@ -1,11 +1,2 @@
-github.com/gomarkdown/markdown v0.0.0-20210408062403-ad838ccf8cdd h1:0b8AqsWQb6A0jjx80UXLG/uMTXQkGD0IGuXWqsrNz1M=
-github.com/gomarkdown/markdown v0.0.0-20210408062403-ad838ccf8cdd/go.mod h1:aii0r/K0ZnHv7G0KF7xy1v0A7s2Ljrb5byB7MO5p6TU=
-github.com/gomarkdown/markdown v0.0.0-20220607163217-45f7c050e2d1 h1:wAupuFkZ/yq219/mSbqDtMfUZQY0gTYEtoz3/LKtppU=
-github.com/gomarkdown/markdown v0.0.0-20220607163217-45f7c050e2d1/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
-github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a h1:AWZzzFrqyjYlRloN6edwTLTUbKxf5flLXNuTBDm3Ews=
-github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
 github.com/gomarkdown/markdown v0.0.0-20240723152757-afa4a469d4f9 h1:TRYrIWJziqvMVn1owO8bmkDJTlMQFYnf74yhD8LXfgU=
 github.com/gomarkdown/markdown v0.0.0-20240723152757-afa4a469d4f9/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
-golang.org/dl v0.0.0-20190829154251-82a15e2f2ead/go.mod h1:IUMfjQLJQd4UTqG1Z90tenwKoCX93Gn3MAQJMOSBsDQ=
-golang.org/dl v0.0.0-20220609182932-6cd2f0e318f7 h1:Z5Cqsjkc4mQlGBF0cgj5S3+M1aW30Wv9Mgg5maRRQhw=
-golang.org/dl v0.0.0-20220609182932-6cd2f0e318f7/go.mod h1:IUMfjQLJQd4UTqG1Z90tenwKoCX93Gn3MAQJMOSBsDQ=
