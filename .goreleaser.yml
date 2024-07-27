@@ -1,5 +1,4 @@
-# This is an example goreleaser.yaml file with some sane defaults.
-# Make sure to check the documentation at http://goreleaser.com
+version: 2
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -67,12 +66,6 @@ dockers:
     #   - "--build-arg=BIN={{ .ProjectName }}"
       - "--build-arg=VERSION={{ .Version }}"
 
-    # Skips the docker push. Could be useful if you also do draft releases.
-    # If set to auto, the release will not be pushed to the docker repository
-    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-    # Defaults to false.
-    #skip_push: false
-
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
     extra_files:
@@ -82,11 +75,10 @@ dockers:
 
 brews:
   - homepage: 'https://github.com/sgaunet/homebrew-tools'
-    folder: Formula
     commit_author:
       name: sgaunet
       email: sgaunet@gmail.com
-    tap:
+    repository:
       owner: sgaunet
       name: homebrew-tools
 
