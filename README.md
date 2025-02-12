@@ -39,8 +39,8 @@ COPY --from=mdtohtml /usr/bin/mdtohtml /usr/bin/mdtohtml
 ## With homebrew
 
 ```
-brew tap sgaunet/tools
-brew install mdtohtml
+brew tap sgaunet/homebrew-tools
+brew install sgaunet/tools/mdtohtml
 ```
 
 ## Download release
