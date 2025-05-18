@@ -23,4 +23,4 @@ tasks:
     
   release:
     cmds:
-      - GITLAB_TOKEN="" goreleaser --clean
+      - GITLAB_TOKEN="" goreleaser --clean --skip validate
