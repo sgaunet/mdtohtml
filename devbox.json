@@ -3,7 +3,8 @@
   "packages": [
     "goreleaser@2.9.0",
     "go-task@3.41.0",
-    "golangci-lint@2.1.6"
+    "golangci-lint@2.1.6",
+    "nfpm@latest"
   ],
   "shell": {
     "init_hook": [
