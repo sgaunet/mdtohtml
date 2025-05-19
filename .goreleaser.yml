@@ -1,16 +1,19 @@
+# GoReleaser configuration for mdtohtml
+# More info: https://goreleaser.com
 version: 2
+
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod download
-    # you may remove this if you don't need go generate
-    #- go generate ./...
+
 builds:
   - id: mdtohtml
+    binary: mdtohtml
+    main: .
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -X main.version={{.Version}}
+      - -s -w -X main.version={{.Version}}
     goos:
       - linux
       - darwin
@@ -22,13 +25,46 @@ builds:
     goarm:
       - "6"
       - "7"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: windows
+        goarch: arm
 
 archives:
-  - name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
-    formats: ["binary"]
+  - id: bin
+    name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    files:
+      - LICENSE
+      - README.md
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+      - goos: "*"
+        formats: [tar.gz]
+    ids:
+      - mdtohtml
+
+# Include raw binaries in the release
+release:
+  github:
+    owner: sgaunet
+    name: mdtohtml
+  # Include all build artifacts and raw binaries
+  extra_files:
+    # Include raw binaries
+    - glob: 'dist/mdtohtml_*/mdtohtml*'
+    # Include archives
+    - glob: 'dist/*.tar.gz'
+    - glob: 'dist/*.zip'
+    # Include packages
+    - glob: 'dist/*.deb'
+    - glob: 'dist/*.rpm'
+    - glob: 'dist/*.apk'
 
 checksum:
   name_template: 'checksums.txt'
+  algorithm: sha256
 
 changelog:
   sort: asc
@@ -36,44 +72,33 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+      - '^chore:'
+      - '^ci:'
 
-
+# Docker configuration
 dockers:
-  # You can have multiple Docker images.
-  -
-    # GOOS of the built binaries/packages that should be used.
-    goos: linux
-    ids:
-    - mdtohtml
-    # GOARCH of the built binaries/packages that should be used.
+  - goos: linux
     goarch: amd64
-    # Templates of the Docker image names.
     image_templates:
-    - "sgaunet/mdtohtml:latest"
-    - "sgaunet/mdtohtml:{{ .Tag }}"
-    #- "sgaunet/mdtohtml:v{{ .Major }}"
+      - "ghcr.io/sgaunet/mdtohtml:latest"
+      - "ghcr.io/sgaunet/mdtohtml:{{ .Tag }}"
+    skip_push: true  # Set to false in CI/CD
+    dockerfile: Dockerfile
     build_flag_templates:
-    #   - "--pull"
-    #   - "--label=org.label-schema.build-date={{.Date}}" 
-    #   - "--label=org.label-schema.name={{ .ProjectName }}"
-    #   - "--label=org.label-schema.url='{{ .GitURL }}'" 
-    #   - "--label=org.label-schema.vcs-ref={{ .ShortCommit }}"
-    #   - "--label=org.label-schema.vcs-url='{{ .GitURL }}'" 
-    #   - "--label=org.label-schema.vendor='hack_and_sla.sh'" 
-    #   - "--label=org.label-schema.version={{ .Version }}"
-    #   - "--label=org.label-schema.schema-version=1.0"
-    #   - "--build-arg=BIN={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--build-arg=VERSION={{ .Version }}"
 
     # Path to the Dockerfile (from the project root).
-    dockerfile: Dockerfile
-    extra_files:
-    # - src
-    - go.mod
-    - go.sum
+    # extra_files:
+    #   - go.mod
+    #   - go.sum
 
 brews:
-  - homepage: 'https://github.com/sgaunet/homebrew-tools'
+  - homepage: 'https://github.com/sgaunetmdtohtml'
+    description: 'A simple and efficient Markdown to HTML converter'
     directory: Formula
     commit_author:
       name: sgaunet
@@ -81,6 +106,11 @@ brews:
     repository:
       owner: sgaunet
       name: homebrew-tools
+    url_template: 'https://github.com/sgaunetmdtohtml/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+    install: |
+      bin.install "mdtohtml"
+    test: |
+      system "#{bin}/mdtohtml", "--help"
 
 # .goreleaser.yaml
 nfpms:
@@ -99,29 +129,9 @@ nfpms:
     # Default:`{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     # file_name_template: "{{ .ConventionalFileName }}"
 
-    # Build IDs for the builds you want to create NFPM packages for.
-    # Defaults empty, which means no filtering.
-    builds:
-      - mdtohtml
-      # - bar
-
-    # Replacements for GOOS and GOARCH in the package name.
-    # Keys should be valid GOOSs or GOARCHs.
-    # Values are the respective replacements.
-    # Default is empty.
-    # replacements:
-    #   amd64: 64-bit
-    #   386: 32-bit
-    #   darwin: macOS
-    #   linux: Tux
-
-    # Your app's vendor.
-    # Default is empty.
-    # vendor: Drum Roll Inc.
-
     # Template to your app's homepage.
     # Default is empty.
-    homepage: https://github.com/sgaunet/mdtohtml
+    homepage: https://github.com/sgaunetmdtohtml
 
     # Your app's maintainer (probably you).
     # Default is empty.
@@ -130,8 +140,8 @@ nfpms:
     # Template to your app's description.
     # Default is empty.
     description: |-
-      Drum rolls installer package.
-      Software to create fast and easy drum rolls.
+      A simple and efficient Markdown to HTML converter.
+      Easily convert your Markdown files to clean, well-formatted HTML.
 
     # Your app's license.
     # Default is empty.
@@ -175,18 +185,6 @@ nfpms:
     # Default is extracted from `version` if it is semver compatible.
     epoch: "2"
 
-    # Version Prerelease.
-    # Default is extracted from `version` if it is semver compatible.
-    # prerelease: beta1
-
-    # Version Metadata (previously deb.metadata).
-    # Default is extracted from `version` if it is semver compatible.
-    # Setting metadata might interfere with version comparisons depending on the packager.
-    # version_metadata: git
-
-    # Version Release.
-    release: "1"
-
     # Section.
     section: default
 
@@ -199,16 +197,13 @@ nfpms:
     meta: true
 
     # Contents to add to the package.
-    # GoReleaser will automatically add the binaries.
-    contents:
-      # Basic file that applies to all packagers
-      - src: mdtohtml
-        dst: /usr/local/bin/mdtohtml
+    # Let GoReleaser automatically add the binary
+    contents: []
 
-      # Simple config file
-      # - src: path/to/local/foo.conf
-      #   dst: /etc/foo.conf
-      #   type: config
+    # Simple config file example (commented out)
+    # - src: path/to/local/foo.conf
+    #   dst: /etc/foo.conf
+    #   type: config
 
       # Simple symlink.
       # Corresponds to `ln -s /sbin/foo /usr/local/bin/foo`
