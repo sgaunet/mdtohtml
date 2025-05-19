@@ -50,6 +50,8 @@ release:
   github:
     owner: sgaunet
     name: mdtohtml
+  # Allow replacing existing artifacts in the release
+  replace_existing_artifacts: true
   # Include all build artifacts and raw binaries
   extra_files:
     # Include raw binaries
