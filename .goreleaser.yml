@@ -52,17 +52,8 @@ release:
     name: mdtohtml
   # Allow replacing existing artifacts in the release
   replace_existing_artifacts: true
-  # Include all build artifacts and raw binaries
-  extra_files:
-    # Include raw binaries
-    - glob: 'dist/mdtohtml_*/mdtohtml*'
-    # Include archives
-    - glob: 'dist/*.tar.gz'
-    - glob: 'dist/*.zip'
-    # Include packages
-    - glob: 'dist/*.deb'
-    - glob: 'dist/*.rpm'
-    - glob: 'dist/*.apk'
+  # Removed extra_files as it was causing duplicate uploads
+  # The archives and packages are automatically included by default
 
 checksum:
   name_template: 'checksums.txt'
