@@ -90,7 +90,7 @@ dockers:
     #   - go.sum
 
 brews:
-  - homepage: 'https://github.com/sgaunetmdtohtml'
+  - homepage: 'https://github.com/sgaunet/mdtohtml'
     description: 'A simple and efficient Markdown to HTML converter'
     directory: Formula
     commit_author:
@@ -99,7 +99,9 @@ brews:
     repository:
       owner: sgaunet
       name: homebrew-tools
-    url_template: 'https://github.com/sgaunetmdtohtml/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+      # Token with 'repo' scope is required for pushing to a different repository
+      token: '{{ .Env.HOMEBREW_TAP_TOKEN }}'
+    url_template: 'https://github.com/sgaunet/mdtohtml/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
     install: |
       bin.install "mdtohtml"
     test: |
