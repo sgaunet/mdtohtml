@@ -1,5 +1,7 @@
 module github.com/sgaunet/mdtohtml
 
-go 1.18
+go 1.22
 
-require github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
+toolchain go1.24.3
+
+require github.com/yuin/goldmark v1.7.12

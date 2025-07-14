@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -10,9 +10,10 @@ import (
 
 	_ "embed"
 
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 const defaultTitle = ""
@@ -75,65 +76,86 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// set up options
-	var extensions = parser.NoIntraEmphasis |
-		parser.Tables |
-		parser.FencedCode |
-		parser.Autolink |
-		parser.Strikethrough |
-		parser.SpaceHeadings
+	// Set up Goldmark with extensions
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM, // GitHub Flavored Markdown
+			extension.DefinitionList,
+			extension.Footnote,
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithXHTML(),
+			html.WithUnsafe(), // Allow raw HTML if needed
+		),
+	)
 
-	var renderer markdown.Renderer
+	// If smartypants is enabled, add the typographer extension
+	if smartypants || fractions || latexdashes {
+		md = goldmark.New(
+			goldmark.WithExtensions(
+				extension.GFM,
+				extension.DefinitionList,
+				extension.Footnote,
+				extension.Typographer, // This enables typographic substitutions
+			),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+			goldmark.WithRendererOptions(
+				html.WithXHTML(),
+				html.WithUnsafe(),
+				// Enable typographic substitutions in the renderer
+				html.WithHardWraps(),
+				html.WithXHTML(),
+				html.WithUnsafe(),
+			),
+		)
+	}
 
-	// render the data into HTML
-	var htmlFlags html.Flags
-	htmlFlags |= html.UseXHTML
-	if smartypants {
-		htmlFlags |= html.Smartypants
-	}
-	if fractions {
-		htmlFlags |= html.SmartypantsFractions
-	}
-	if latexdashes {
-		htmlFlags |= html.SmartypantsLatexDashes
-	}
-	title := ""
+	// Set page title if needed
+	var title string
 	if page {
-		htmlFlags |= html.CompletePage
 		title = getTitle(input)
 	}
-	if toc {
-		htmlFlags |= html.TOC
-	}
-	params := html.RendererOptions{
-		Flags: htmlFlags,
-		Title: title,
-		//CSS:   css,
-	}
-	renderer = html.NewRenderer(params)
 
-	// parse and render
-	var output string
-	parser := parser.NewWithExtensions(extensions)
-	output = string(markdown.ToHTML(input, parser, renderer))
+	// Create a buffer to hold the HTML output
+	var buf bytes.Buffer
 
-	// Add css github style
-	var outputCssGitHub string
-	reader := bufio.NewScanner(strings.NewReader(output))
-	for reader.Scan() {
-		if reader.Text() == "</head>" {
-			for _, i := range [3]string{"<style>", cssgithub, "</style>"} {
-				outputCssGitHub = outputCssGitHub + i + "\n"
-			}
-		}
-		outputCssGitHub = outputCssGitHub + reader.Text() + "\n"
-	}
-	err = reader.Err()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error : %v", err)
+	// Convert markdown to HTML
+	if err := md.Convert(input, &buf); err != nil {
+		fmt.Fprintln(os.Stderr, "Error converting markdown:", err)
 		os.Exit(-1)
 	}
-	output = outputCssGitHub
+
+	// Get the output as a string
+	output := buf.String()
+
+	// Wrap in HTML page if needed
+	if page {
+		output = fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>%s</title>
+</head>
+<body>
+%s
+</body>
+</html>`, title, output)
+	}
+
+	// Add CSS github style
+	if page {
+		// Inject CSS before the closing </head> tag
+		cssInjection := fmt.Sprintf("<style>\n%s\n</style>\n</head>", cssgithub)
+		output = strings.Replace(output, "</head>", cssInjection, 1)
+	} else {
+		// If not a full page, just prepend the style
+		output = fmt.Sprintf("<style>\n%s\n</style>\n%s", cssgithub, output)
+	}
 
 	// output the result
 	var out *os.File
