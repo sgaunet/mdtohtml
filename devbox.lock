@@ -126,50 +126,50 @@
       }
     },
     "nfpm@latest": {
-      "last_modified": "2025-05-12T14:38:58Z",
-      "resolved": "github:NixOS/nixpkgs/eaeed9530c76ce5f1d2d8232e08bec5e26f18ec1#nfpm",
+      "last_modified": "2025-06-20T02:24:11Z",
+      "resolved": "github:NixOS/nixpkgs/076e8c6678d8c54204abcb4b1b14c366835a58bb#nfpm",
       "source": "devbox-search",
-      "version": "2.42.0",
+      "version": "2.43.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/sjzlvvr41n74wrcyna30z5r1aj4cx2y1-nfpm-2.42.0",
+              "path": "/nix/store/b506xi4qbwd3a7l0mz5b2fr2k80n9z81-nfpm-2.43.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/sjzlvvr41n74wrcyna30z5r1aj4cx2y1-nfpm-2.42.0"
+          "store_path": "/nix/store/b506xi4qbwd3a7l0mz5b2fr2k80n9z81-nfpm-2.43.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/dxp12nygzb8xl55a6sqsp791w7b1aryd-nfpm-2.42.0",
+              "path": "/nix/store/z7y972k40zlbmbj1h6slzi2h0wvhd1hq-nfpm-2.43.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/dxp12nygzb8xl55a6sqsp791w7b1aryd-nfpm-2.42.0"
+          "store_path": "/nix/store/z7y972k40zlbmbj1h6slzi2h0wvhd1hq-nfpm-2.43.0"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/9brs7hq6jzkhr2dzg9486fkmdxqnqjhm-nfpm-2.42.0",
+              "path": "/nix/store/563vs1fnssvnm69fc6f4kpzq4rp82y69-nfpm-2.43.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/9brs7hq6jzkhr2dzg9486fkmdxqnqjhm-nfpm-2.42.0"
+          "store_path": "/nix/store/563vs1fnssvnm69fc6f4kpzq4rp82y69-nfpm-2.43.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/w6y9575ji9smnbwklq2bb5r7ri5zgc6b-nfpm-2.42.0",
+              "path": "/nix/store/1gzj9f8ab476j3b6fxz908vccywlvxg4-nfpm-2.43.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/w6y9575ji9smnbwklq2bb5r7ri5zgc6b-nfpm-2.42.0"
+          "store_path": "/nix/store/1gzj9f8ab476j3b6fxz908vccywlvxg4-nfpm-2.43.0"
         }
       }
     }

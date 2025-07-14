@@ -1,10 +1,10 @@
+// Package main provides a command-line tool to convert markdown files to HTML with GitHub-style CSS.
 package main
 
 import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -21,13 +21,13 @@ const defaultTitle = ""
 //go:embed github-markdown.css
 var cssgithub string
 
-var version string = "development"
+var version = "development"
 
 func printVersion() {
 	fmt.Println(version)
 }
 
-func main() {
+func setupFlags() (bool, bool, bool, bool, bool, bool) {
 	var page, toc, smartypants, latexdashes, fractions, vOption bool
 	flag.BoolVar(&page, "page", false, "Generate a standalone HTML page")
 	flag.BoolVar(&toc, "toc", false, "Generate a table of contents")
@@ -50,36 +50,32 @@ func main() {
 	}
 	flag.Parse()
 
-	if vOption {
-		printVersion()
-		os.Exit(0)
+	return page, toc, smartypants, latexdashes, fractions, vOption
+}
+
+func createGoldmarkProcessor(smartypants, fractions, latexdashes bool) goldmark.Markdown {
+	if smartypants || fractions || latexdashes {
+		return goldmark.New(
+			goldmark.WithExtensions(
+				extension.GFM,
+				extension.DefinitionList,
+				extension.Footnote,
+				extension.Typographer,
+			),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+			goldmark.WithRendererOptions(
+				html.WithXHTML(),
+				html.WithUnsafe(),
+				html.WithHardWraps(),
+			),
+		)
 	}
 
-	// enforce implied options
-	page = true
-
-	// read the input
-	var input []byte
-	var err error
-	args := flag.Args()
-
-	if len(args) != 2 {
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	inputFilePath := args[0]
-	outputFilePath := args[1]
-
-	if input, err = ioutil.ReadFile(inputFilePath); err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading from", inputFilePath, ":", err)
-		os.Exit(-1)
-	}
-
-	// Set up Goldmark with extensions
-	md := goldmark.New(
+	return goldmark.New(
 		goldmark.WithExtensions(
-			extension.GFM, // GitHub Flavored Markdown
+			extension.GFM,
 			extension.DefinitionList,
 			extension.Footnote,
 		),
@@ -88,53 +84,21 @@ func main() {
 		),
 		goldmark.WithRendererOptions(
 			html.WithXHTML(),
-			html.WithUnsafe(), // Allow raw HTML if needed
+			html.WithUnsafe(),
 		),
 	)
+}
 
-	// If smartypants is enabled, add the typographer extension
-	if smartypants || fractions || latexdashes {
-		md = goldmark.New(
-			goldmark.WithExtensions(
-				extension.GFM,
-				extension.DefinitionList,
-				extension.Footnote,
-				extension.Typographer, // This enables typographic substitutions
-			),
-			goldmark.WithParserOptions(
-				parser.WithAutoHeadingID(),
-			),
-			goldmark.WithRendererOptions(
-				html.WithXHTML(),
-				html.WithUnsafe(),
-				// Enable typographic substitutions in the renderer
-				html.WithHardWraps(),
-				html.WithXHTML(),
-				html.WithUnsafe(),
-			),
-		)
-	}
-
-	// Set page title if needed
-	var title string
-	if page {
-		title = getTitle(input)
-	}
-
-	// Create a buffer to hold the HTML output
+func processMarkdown(input []byte, md goldmark.Markdown, page bool) (string, error) {
 	var buf bytes.Buffer
-
-	// Convert markdown to HTML
 	if err := md.Convert(input, &buf); err != nil {
-		fmt.Fprintln(os.Stderr, "Error converting markdown:", err)
-		os.Exit(-1)
+		return "", fmt.Errorf("error converting markdown: %w", err)
 	}
 
-	// Get the output as a string
 	output := buf.String()
 
-	// Wrap in HTML page if needed
 	if page {
+		title := getTitle(input)
 		output = fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
@@ -147,26 +111,76 @@ func main() {
 </html>`, title, output)
 	}
 
-	// Add CSS github style
+	return output, nil
+}
+
+func addCSS(output string, page bool) string {
 	if page {
-		// Inject CSS before the closing </head> tag
 		cssInjection := fmt.Sprintf("<style>\n%s\n</style>\n</head>", cssgithub)
-		output = strings.Replace(output, "</head>", cssInjection, 1)
-	} else {
-		// If not a full page, just prepend the style
-		output = fmt.Sprintf("<style>\n%s\n</style>\n%s", cssgithub, output)
+		return strings.Replace(output, "</head>", cssInjection, 1)
+	}
+	return fmt.Sprintf("<style>\n%s\n</style>\n%s", cssgithub, output)
+}
+
+func writeOutput(output, outputFilePath string) error {
+	out, err := os.Create(outputFilePath)
+	if err != nil {
+		return fmt.Errorf("error creating %s: %w", outputFilePath, err)
 	}
 
-	// output the result
-	var out *os.File
-	if out, err = os.Create(outputFilePath); err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating %s: %v", outputFilePath, err)
-		os.Exit(-1)
-	}
-	defer out.Close()
+	defer func() {
+		if closeErr := out.Close(); closeErr != nil {
+			fmt.Fprintf(os.Stderr, "Error closing file: %v\n", closeErr)
+		}
+	}()
 
 	if _, err = out.WriteString(output); err != nil {
-		fmt.Fprintln(os.Stderr, "Error writing output:", err)
+		return fmt.Errorf("error writing output: %w", err)
+	}
+
+	return nil
+}
+
+func main() {
+	_, toc, smartypants, latexdashes, fractions, vOption := setupFlags()
+	_ = toc // Variable assigned but not used
+
+	if vOption {
+		printVersion()
+		os.Exit(0)
+	}
+
+	// enforce implied options
+	page := true
+
+	args := flag.Args()
+	expectedArgs := 2
+	if len(args) != expectedArgs {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	inputFilePath := args[0]
+	outputFilePath := args[1]
+
+	input, err := os.ReadFile(inputFilePath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error reading from", inputFilePath, ":", err)
+		os.Exit(-1)
+	}
+
+	md := createGoldmarkProcessor(smartypants, fractions, latexdashes)
+
+	output, err := processMarkdown(input, md, page)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(-1)
+	}
+
+	output = addCSS(output, page)
+
+	if err := writeOutput(output, outputFilePath); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(-1)
 	}
 }
