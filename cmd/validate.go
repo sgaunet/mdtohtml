@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/sgaunet/mdtohtml/pkg/converter"
+	"github.com/sgaunet/mdtohtml/pkg/validator"
 )
 
 var validateCmd = &cobra.Command{
@@ -38,17 +40,19 @@ func validateMarkdown(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("%w: file '%s'", ErrInputNotExist, inputFilePath)
 	}
 
-	input, err := os.ReadFile(inputFilePath)
-	if err != nil {
-		return fmt.Errorf("error reading from %s: %w", inputFilePath, err)
+	// Create converter with options
+	options := converter.Options{
+		SmartPunctuation: smartypants,
+		LaTeXDashes:      latexdashes,
+		Fractions:        fractions,
 	}
 
-	md := createGoldmarkProcessor(smartypants, fractions, latexdashes)
+	conv := converter.NewGoldmarkConverter(options)
+	val := validator.NewGoldmarkValidator(conv)
 
-	// Try to process the markdown
-	_, err = processMarkdown(input, md)
-	if err != nil {
-		return fmt.Errorf("validation failed: %w", err)
+	// Validate the file
+	if err := val.ValidateFile(inputFilePath); err != nil {
+		return fmt.Errorf("validation failed for %s: %w", inputFilePath, err)
 	}
 
 	fmt.Printf("✓ %s is valid Markdown\n", inputFilePath)
