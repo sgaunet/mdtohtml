@@ -1,6 +1,8 @@
-package main
+package cmd
 
 import "strings"
+
+const defaultTitle = ""
 
 // getTitle tries to guess the title from the input buffer.
 // It checks if it starts with an <h1> element and uses that.
@@ -37,6 +39,7 @@ func skipBlankLines(input []byte, start int) int {
 	for i < len(input) && (input[i] == '\n' || input[i] == '\r') {
 		i++
 	}
+
 	return i
 }
 
@@ -46,6 +49,7 @@ func extractFirstLine(input []byte, start int) ([]byte, int) {
 	i = findLineEnd(input, i)
 	line := input[lineStart:i]
 	i = skipLineEnding(input, i)
+
 	return line, i
 }
 
@@ -53,6 +57,7 @@ func skipCarriageReturn(input []byte, pos int) int {
 	if pos < len(input) && input[pos] == '\r' && pos+1 < len(input) && input[pos+1] == '\n' {
 		return pos + 1
 	}
+
 	return pos
 }
 
@@ -93,6 +98,6 @@ func checkUnderlinedHeader(input []byte, pos int) bool {
 	for i < len(input) && (input[i] == ' ' || input[i] == '\t') {
 		i++
 	}
-	
+
 	return i < len(input) && (input[i] == '\n' || input[i] == '\r')
 }
