@@ -35,7 +35,7 @@ func validateMarkdown(_ *cobra.Command, args []string) error {
 	// Validate input file exists
 	_, err := os.Stat(inputFilePath)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("input file '%s' does not exist", inputFilePath)
+		return fmt.Errorf("%w: file '%s'", ErrInputNotExist, inputFilePath)
 	}
 
 	input, err := os.ReadFile(inputFilePath)
