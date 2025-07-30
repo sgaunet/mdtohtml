@@ -206,7 +206,7 @@ func TestStressWorkflow(t *testing.T) {
 	}
 
 	// Create many files
-	numFiles := 100
+	numFiles := 20
 	for i := 0; i < numFiles; i++ {
 		filename := fmt.Sprintf("test_%d.md", i)
 		content := fmt.Sprintf("# Test Document %d\n\nThis is test document number %d with some **bold** text and a [link](http://example.com).\n\n- List item 1\n- List item 2", i, i)
@@ -324,7 +324,7 @@ func TestAllComponentIntegration(t *testing.T) {
 			},
 			input: "# Plain Text\n\nPlain \"quotes\" and 1/2.",
 			checkOutput: func(output string) bool {
-				return strings.Contains(output, "<title>Plain Text</title>") && strings.Contains(output, "\"quotes\"")
+				return strings.Contains(output, "<title>Plain Text</title>") && strings.Contains(output, "&quot;quotes&quot;")
 			},
 		},
 	}

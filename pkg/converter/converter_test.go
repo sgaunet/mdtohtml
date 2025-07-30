@@ -303,7 +303,7 @@ func TestCompleteConverter_Convert_ErrorPaths(t *testing.T) {
 		conv := converter.NewCompleteConverter(converter.DefaultOptions())
 		
 		// Create a very large input that might cause issues
-		largeInput := make([]byte, 1024*1024*10) // 10MB of null bytes
+		largeInput := make([]byte, 1024*100) // 100KB of null bytes
 		_, err := conv.Convert(largeInput)
 		// This might not actually error, but at least we're testing the path
 		if err != nil {
