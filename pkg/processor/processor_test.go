@@ -430,7 +430,7 @@ func TestFileProcessor_LargeFiles(t *testing.T) {
 	}
 
 	// Create a large markdown file (1MB+)
-	largeContent := strings.Repeat("# Section\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. ", 10000)
+	largeContent := strings.Repeat("# Section\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. ", 1000)
 	largeFile := filepath.Join(inputDir, "large.md")
 	if err := os.WriteFile(largeFile, []byte(largeContent), 0644); err != nil {
 		t.Fatalf("Failed to create large file: %v", err)

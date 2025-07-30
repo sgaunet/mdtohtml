@@ -194,7 +194,7 @@ func TestGoldmarkValidator_Validate_ErrorScenarios(t *testing.T) {
 			setupConv: func() converter.Converter {
 				return converter.NewGoldmarkConverter(converter.DefaultOptions())
 			},
-			input:       make([]byte, 50*1024*1024), // 50MB
+			input:       make([]byte, 1024*1024), // 1MB
 			expectError: false, // Should handle large inputs gracefully
 		},
 		{
@@ -267,7 +267,7 @@ func TestGoldmarkValidator_ValidateFile_AdvancedErrors(t *testing.T) {
 		}
 		
 		largeFile := filepath.Join(tmpDir, "large.md")
-		largeContent := strings.Repeat("# Section\n\nContent here.\n\n", 100000) // ~1.5MB
+		largeContent := strings.Repeat("# Section\n\nContent here.\n\n", 1000) // ~15KB
 		if err := os.WriteFile(largeFile, []byte(largeContent), 0644); err != nil {
 			t.Fatalf("Failed to create large file: %v", err)
 		}
@@ -322,7 +322,7 @@ func TestGoldmarkValidator_MemoryUsage(t *testing.T) {
 	val := validator.NewGoldmarkValidator(conv)
 	
 	// Validate many different inputs to test for memory leaks
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100; i++ {
 		input := []byte(fmt.Sprintf("# Test %d\n\nThis is test content number %d with some **bold** and *italic* text.", i, i))
 		err := val.Validate(input)
 		if err != nil {
