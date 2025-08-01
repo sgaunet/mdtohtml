@@ -6,7 +6,7 @@ toolchain go1.24.3
 
 require (
 	github.com/spf13/cobra v1.9.1
-	github.com/yuin/goldmark v1.7.12
+	github.com/yuin/goldmark v1.7.13
 )
 
 require (
