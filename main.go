@@ -5,9 +5,6 @@ import (
 	"github.com/sgaunet/mdtohtml/cmd"
 )
 
-var version = "development"
-
 func main() {
-	cmd.Version = version
 	cmd.Execute()
 }
