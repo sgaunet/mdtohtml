@@ -41,7 +41,7 @@ archives:
       - goos: windows
         formats: [zip]
       - goos: "*"
-        formats: [tar.gz]
+        formats: ["binary"]
     ids:
       - mdtohtml
 
