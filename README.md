@@ -154,20 +154,20 @@ mdtohtml uses the [Goldmark](https://github.com/yuin/goldmark) parser with the f
 - **Auto heading IDs** - Automatic generation of heading anchors
 - **Unsafe HTML** - Raw HTML is preserved
 
-# Install
+## Installation
 
-## With homebrew
+### Install with Homebrew
 
-```
+```bash
 brew tap sgaunet/homebrew-tools
 brew install sgaunet/tools/mdtohtml
 ```
 
-## Download release
+### Manual Installation
 
 Download the latest release from the [releases page](https://github.com/sgaunet/mdtohtml/releases) and copy it to `/usr/local/bin` or any directory in your PATH.
 
-## Build from source
+### Build from source
 
 ```bash
 # Clone the repository
