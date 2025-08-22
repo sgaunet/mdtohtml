@@ -103,7 +103,7 @@ brews:
       token: '{{ .Env.HOMEBREW_TAP_TOKEN }}'
     url_template: 'https://github.com/sgaunet/mdtohtml/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
     install: |
-      bin.install "mdtohtml"
+      bin.install "{{ .ArtifactName }}" => "mdtohtml"
     test: |
       system "#{bin}/mdtohtml", "--help"
 
