@@ -20,6 +20,9 @@ type Options struct {
 
 	// Fractions converts fractions like 1/2 to ½
 	Fractions bool
+
+	// SafeMode disables raw HTML pass-through to prevent XSS
+	SafeMode bool
 }
 
 // DefaultOptions returns the default converter options.

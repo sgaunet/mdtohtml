@@ -12,6 +12,7 @@ var (
 	smartypants bool
 	latexdashes bool
 	fractions   bool
+	safeMode    bool
 )
 
 var rootCmd = &cobra.Command{
@@ -36,6 +37,7 @@ func init() {
 	rootCmd.Flags().BoolVar(&smartypants, "smartypants", true, "Apply smartypants-style substitutions")
 	rootCmd.Flags().BoolVar(&latexdashes, "latexdashes", true, "Use LaTeX-style dash rules for smartypants")
 	rootCmd.Flags().BoolVar(&fractions, "fractions", true, "Use improved fraction rules for smartypants")
+	rootCmd.Flags().BoolVar(&safeMode, "safe-mode", false, "Disable raw HTML pass-through to prevent XSS")
 	rootCmd.Version = Version
 	rootCmd.SetVersionTemplate(`{{.Version}}
 `)
@@ -45,5 +47,5 @@ func convert(_ *cobra.Command, args []string) error {
 	inputFilePath := args[0]
 	outputFilePath := args[1]
 
-	return runConversion(inputFilePath, outputFilePath, smartypants, latexdashes, fractions)
+	return runConversion(inputFilePath, outputFilePath, smartypants, latexdashes, fractions, safeMode)
 }

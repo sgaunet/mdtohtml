@@ -36,6 +36,7 @@ func init() {
 	batchCmd.Flags().BoolVar(&smartypants, "smartypants", true, "Apply smartypants-style substitutions")
 	batchCmd.Flags().BoolVar(&latexdashes, "latexdashes", true, "Use LaTeX-style dash rules for smartypants")
 	batchCmd.Flags().BoolVar(&fractions, "fractions", true, "Use improved fraction rules for smartypants")
+	batchCmd.Flags().BoolVar(&safeMode, "safe-mode", false, "Disable raw HTML pass-through to prevent XSS")
 }
 
 func batchConvert(_ *cobra.Command, args []string) error {
@@ -46,6 +47,7 @@ func batchConvert(_ *cobra.Command, args []string) error {
 		SmartPunctuation: smartypants,
 		LaTeXDashes:      latexdashes,
 		Fractions:        fractions,
+		SafeMode:         safeMode,
 	}
 
 	conv := converter.NewCompleteConverter(options)
