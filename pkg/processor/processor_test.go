@@ -1,6 +1,7 @@
 package processor_test
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -226,6 +227,30 @@ func TestFileProcessor_ProcessDirectory_Errors(t *testing.T) {
 		err := proc.ProcessDirectory(inputDir, options)
 		if err == nil {
 			t.Error("Expected error for restricted output directory")
+		}
+	})
+
+	t.Run("invalid glob pattern", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		inputDir := filepath.Join(tmpDir, "input")
+		outputDir := filepath.Join(tmpDir, "output")
+
+		if err := os.MkdirAll(inputDir, 0755); err != nil {
+			t.Fatalf("Failed to create input directory: %v", err)
+		}
+
+		options := processor.ProcessOptions{
+			OutputDir: outputDir,
+			Pattern:   "[*.md",
+			Recursive: false,
+		}
+
+		err := proc.ProcessDirectory(inputDir, options)
+		if err == nil {
+			t.Fatal("Expected error for invalid glob pattern, got nil")
+		}
+		if !errors.Is(err, processor.ErrInvalidPattern) {
+			t.Errorf("Expected error wrapping ErrInvalidPattern, got: %v", err)
 		}
 	})
 
