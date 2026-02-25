@@ -59,7 +59,10 @@ func (c *GoldmarkConverter) Convert(input []byte) ([]byte, error) {
 func (c *GoldmarkConverter) ConvertFile(inputPath, outputPath string) error {
 	input, err := os.ReadFile(inputPath)
 	if err != nil {
-		return fmt.Errorf("error reading file %s: %w", inputPath, err)
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied reading file '%s': %w", inputPath, err)
+		}
+		return fmt.Errorf("error reading file '%s': %w", inputPath, err)
 	}
 
 	output, err := c.Convert(input)
@@ -69,7 +72,10 @@ func (c *GoldmarkConverter) ConvertFile(inputPath, outputPath string) error {
 
 	const defaultFileMode = 0644
 	if err := os.WriteFile(outputPath, output, defaultFileMode); err != nil {
-		return fmt.Errorf("error writing file %s: %w", outputPath, err)
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied writing file '%s': %w", outputPath, err)
+		}
+		return fmt.Errorf("error writing file '%s': %w", outputPath, err)
 	}
 
 	return nil

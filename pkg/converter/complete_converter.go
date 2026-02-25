@@ -61,7 +61,10 @@ func (c *CompleteConverter) Convert(input []byte) ([]byte, error) {
 func (c *CompleteConverter) ConvertFile(inputPath, outputPath string) error {
 	input, err := os.ReadFile(inputPath)
 	if err != nil {
-		return fmt.Errorf("error reading file %s: %w", inputPath, err)
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied reading file '%s': %w", inputPath, err)
+		}
+		return fmt.Errorf("error reading file '%s': %w", inputPath, err)
 	}
 
 	output, err := c.Convert(input)
@@ -71,7 +74,10 @@ func (c *CompleteConverter) ConvertFile(inputPath, outputPath string) error {
 
 	out, err := os.Create(outputPath)
 	if err != nil {
-		return fmt.Errorf("error creating file %s: %w", outputPath, err)
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied creating file '%s': %w", outputPath, err)
+		}
+		return fmt.Errorf("error creating file '%s': %w", outputPath, err)
 	}
 	defer func() {
 		if closeErr := out.Close(); closeErr != nil {
@@ -80,7 +86,10 @@ func (c *CompleteConverter) ConvertFile(inputPath, outputPath string) error {
 	}()
 
 	if _, err := out.Write(output); err != nil {
-		return fmt.Errorf("error writing file %s: %w", outputPath, err)
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied writing file '%s': %w", outputPath, err)
+		}
+		return fmt.Errorf("error writing file '%s': %w", outputPath, err)
 	}
 
 	return nil

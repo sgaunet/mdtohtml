@@ -32,7 +32,10 @@ func (v *GoldmarkValidator) Validate(content []byte) error {
 func (v *GoldmarkValidator) ValidateFile(path string) error {
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("error reading file %s: %w", path, err)
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied reading file '%s': %w", path, err)
+		}
+		return fmt.Errorf("error reading file '%s': %w", path, err)
 	}
 
 	return v.Validate(content)
