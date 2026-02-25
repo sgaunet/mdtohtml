@@ -188,7 +188,7 @@ sudo cp mdtohtml /usr/local/bin/
 
 ```bash
 # Run linter
-task linter
+task lint
 
 # Create snapshot build
 task snapshot
