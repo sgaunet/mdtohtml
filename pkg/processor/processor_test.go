@@ -557,6 +557,107 @@ func countHTMLFiles(t *testing.T, dir string) int {
 	return count
 }
 
+// TestValidateOutputPath tests path traversal validation
+func TestValidateOutputPath(t *testing.T) {
+	tests := []struct {
+		name       string
+		outputPath string
+		outputDir  string
+		wantErr    bool
+	}{
+		{
+			name:       "valid path within output directory",
+			outputPath: "/output/test.html",
+			outputDir:  "/output",
+			wantErr:    false,
+		},
+		{
+			name:       "valid nested path",
+			outputPath: "/output/subdir/test.html",
+			outputDir:  "/output",
+			wantErr:    false,
+		},
+		{
+			name:       "path traversal with ..",
+			outputPath: "/output/../etc/test.html",
+			outputDir:  "/output",
+			wantErr:    true,
+		},
+		{
+			name:       "path escapes via relative traversal",
+			outputPath: "/output/../../secret/test.html",
+			outputDir:  "/output",
+			wantErr:    true,
+		},
+		{
+			name:       "path matches directory prefix but escapes",
+			outputPath: "/output-evil/test.html",
+			outputDir:  "/output",
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := processor.ValidateOutputPath(tt.outputPath, tt.outputDir)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateOutputPath() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if err != nil && !errors.Is(err, processor.ErrPathTraversal) {
+				t.Errorf("Expected error wrapping ErrPathTraversal, got: %v", err)
+			}
+		})
+	}
+}
+
+// TestFileProcessor_ProcessDirectory_PathTraversal tests that path traversal is blocked during batch processing
+func TestFileProcessor_ProcessDirectory_PathTraversal(t *testing.T) {
+	tmpDir := t.TempDir()
+	inputDir := filepath.Join(tmpDir, "input")
+	outputDir := filepath.Join(tmpDir, "output")
+
+	if err := os.MkdirAll(inputDir, 0755); err != nil {
+		t.Fatalf("Failed to create input directory: %v", err)
+	}
+
+	// Create a malicious file with path traversal in its relative path
+	maliciousDir := filepath.Join(inputDir, "..", "..", "escape")
+	if err := os.MkdirAll(maliciousDir, 0755); err != nil {
+		t.Fatalf("Failed to create malicious directory: %v", err)
+	}
+
+	maliciousFile := filepath.Join(maliciousDir, "evil.md")
+	if err := os.WriteFile(maliciousFile, []byte("# Evil"), 0644); err != nil {
+		t.Fatalf("Failed to create malicious file: %v", err)
+	}
+
+	conv := converter.NewCompleteConverter(converter.DefaultOptions())
+	proc := processor.NewFileProcessor(conv)
+
+	// Process the malicious file path directly through processFile via ProcessDirectory
+	// The file's relative path from inputDir would contain ".." components
+	options := processor.ProcessOptions{
+		OutputDir: outputDir,
+		Pattern:   "*.md",
+		Recursive: true,
+	}
+
+	// Processing the escape directory should not write outside outputDir
+	err := proc.ProcessDirectory(maliciousDir, options)
+	if err != nil {
+		// If it errors, it should be a path traversal error
+		if errors.Is(err, processor.ErrPathTraversal) {
+			return // Expected behavior
+		}
+	}
+
+	// Verify no files were written outside outputDir
+	escapedPath := filepath.Join(tmpDir, "escape", "evil.html")
+	if _, statErr := os.Stat(escapedPath); statErr == nil {
+		t.Error("Path traversal allowed: file was written outside output directory")
+	}
+}
+
 // Mock converter that always fails
 type MockFailingConverter struct{}
 

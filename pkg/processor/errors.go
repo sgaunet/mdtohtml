@@ -7,4 +7,6 @@ var (
 	ErrDirectoryNotExist = errors.New("directory does not exist")
 	// ErrInvalidPattern is returned when a glob pattern is malformed.
 	ErrInvalidPattern = errors.New("invalid file pattern")
+	// ErrPathTraversal is returned when an output path escapes the output directory.
+	ErrPathTraversal = errors.New("path traversal detected")
 )
