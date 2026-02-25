@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -45,12 +44,6 @@ func init() {
 func convert(_ *cobra.Command, args []string) error {
 	inputFilePath := args[0]
 	outputFilePath := args[1]
-
-	// Validate input file exists
-	_, err := os.Stat(inputFilePath)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("%w: file '%s'", ErrInputNotExist, inputFilePath)
-	}
 
 	return runConversion(inputFilePath, outputFilePath, smartypants, latexdashes, fractions)
 }

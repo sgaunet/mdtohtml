@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/sgaunet/mdtohtml/pkg/converter"
@@ -33,12 +32,6 @@ func init() {
 
 func validateMarkdown(_ *cobra.Command, args []string) error {
 	inputFilePath := args[0]
-
-	// Validate input file exists
-	_, err := os.Stat(inputFilePath)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("%w: file '%s'", ErrInputNotExist, inputFilePath)
-	}
 
 	// Create converter with options
 	options := converter.Options{
