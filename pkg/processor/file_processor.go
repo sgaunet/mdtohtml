@@ -39,7 +39,7 @@ func (p *FileProcessor) ProcessDirectory(dir string, options ProcessOptions) err
 	// Find files to process
 	files, err := p.findFiles(dir, options)
 	if err != nil {
-		return fmt.Errorf("error finding files: %w", err)
+		return fmt.Errorf("error finding files matching '%s' in '%s': %w", options.Pattern, dir, err)
 	}
 
 	if len(files) == 0 {
@@ -51,7 +51,7 @@ func (p *FileProcessor) ProcessDirectory(dir string, options ProcessOptions) err
 	fmt.Printf("Converting %d files...\n", len(files))
 	for _, file := range files {
 		if err := p.processFile(file, dir, options.OutputDir); err != nil {
-			return err
+			return fmt.Errorf("batch processing '%s': %w", dir, err)
 		}
 	}
 
