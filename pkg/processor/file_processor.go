@@ -30,7 +30,10 @@ func (p *FileProcessor) ProcessDirectory(dir string, options ProcessOptions) err
 	// Create output directory
 	const defaultDirMode = 0755
 	if err := os.MkdirAll(options.OutputDir, defaultDirMode); err != nil {
-		return fmt.Errorf("error creating output directory: %w", err)
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied creating output directory '%s': %w", options.OutputDir, err)
+		}
+		return fmt.Errorf("error creating output directory '%s': %w", options.OutputDir, err)
 	}
 
 	// Find files to process
@@ -93,6 +96,9 @@ func (p *FileProcessor) processFile(file, inputDir, outputDir string) error {
 	// Create subdirectories if needed
 	const defaultDirMode = 0755
 	if err := os.MkdirAll(filepath.Dir(outputPath), defaultDirMode); err != nil {
+		if os.IsPermission(err) {
+			return fmt.Errorf("permission denied creating directory for '%s': %w", outputPath, err)
+		}
 		return fmt.Errorf("error creating directory for '%s': %w", outputPath, err)
 	}
 
