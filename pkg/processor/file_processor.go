@@ -27,6 +27,11 @@ func (p *FileProcessor) ProcessDirectory(dir string, options ProcessOptions) err
 		return fmt.Errorf("%w: %s", ErrDirectoryNotExist, dir)
 	}
 
+	// Validate glob pattern
+	if _, err := filepath.Match(options.Pattern, ""); err != nil {
+		return fmt.Errorf("%w '%s': %w", ErrInvalidPattern, options.Pattern, err)
+	}
+
 	// Create output directory
 	const defaultDirMode = 0755
 	if err := os.MkdirAll(options.OutputDir, defaultDirMode); err != nil {
@@ -79,7 +84,11 @@ func (p *FileProcessor) findFilesRecursive(dir, pattern string) ([]string, error
 		if d.IsDir() {
 			return nil
 		}
-		if matched, _ := filepath.Match(pattern, filepath.Base(path)); matched {
+		matched, matchErr := filepath.Match(pattern, filepath.Base(path))
+		if matchErr != nil {
+			return fmt.Errorf("%w '%s': %w", ErrInvalidPattern, pattern, matchErr)
+		}
+		if matched {
 			files = append(files, path)
 		}
 		return nil
