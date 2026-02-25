@@ -59,7 +59,7 @@ func batchConvert(_ *cobra.Command, args []string) error {
 	}
 
 	if err := proc.ProcessDirectory(inputDir, processOptions); err != nil {
-		return fmt.Errorf("batch processing failed: %w", err)
+		return fmt.Errorf("batch processing failed for directory '%s': %w", inputDir, err)
 	}
 	return nil
 }
