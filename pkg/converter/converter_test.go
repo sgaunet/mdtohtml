@@ -399,6 +399,56 @@ func TestConverter_Options(t *testing.T) {
 	}
 }
 
+// TestGoldmarkConverter_SafeMode tests that safe mode strips raw HTML
+func TestGoldmarkConverter_SafeMode(t *testing.T) {
+	rawHTMLInput := "# Title\n\n<script>alert('xss')</script>\n\n<div onclick=\"evil()\">click me</div>\n\nNormal paragraph."
+
+	t.Run("unsafe mode passes raw HTML through", func(t *testing.T) {
+		conv := converter.NewGoldmarkConverter(converter.Options{SafeMode: false})
+		output, err := conv.Convert([]byte(rawHTMLInput))
+		if err != nil {
+			t.Fatalf("Convert() error = %v", err)
+		}
+		outputStr := string(output)
+		if !strings.Contains(outputStr, "<script>") {
+			t.Error("Unsafe mode should pass <script> tags through")
+		}
+		if !strings.Contains(outputStr, "onclick") {
+			t.Error("Unsafe mode should pass onclick attributes through")
+		}
+	})
+
+	t.Run("safe mode strips raw HTML", func(t *testing.T) {
+		conv := converter.NewGoldmarkConverter(converter.Options{SafeMode: true})
+		output, err := conv.Convert([]byte(rawHTMLInput))
+		if err != nil {
+			t.Fatalf("Convert() error = %v", err)
+		}
+		outputStr := string(output)
+		if strings.Contains(outputStr, "<script>") {
+			t.Errorf("Safe mode should strip <script> tags, got: %s", outputStr)
+		}
+		if strings.Contains(outputStr, "onclick") {
+			t.Errorf("Safe mode should strip onclick attributes, got: %s", outputStr)
+		}
+		if !strings.Contains(outputStr, "Normal paragraph") {
+			t.Error("Safe mode should preserve normal markdown content")
+		}
+	})
+
+	t.Run("safe mode via complete converter", func(t *testing.T) {
+		conv := converter.NewCompleteConverter(converter.Options{SafeMode: true})
+		output, err := conv.Convert([]byte(rawHTMLInput))
+		if err != nil {
+			t.Fatalf("Convert() error = %v", err)
+		}
+		outputStr := string(output)
+		if strings.Contains(outputStr, "<script>") {
+			t.Errorf("Complete converter safe mode should strip <script> tags, got: %s", outputStr)
+		}
+	})
+}
+
 // TestDefaultOptions tests the default options function
 func TestDefaultOptions(t *testing.T) {
 	opts := converter.DefaultOptions()
@@ -411,6 +461,9 @@ func TestDefaultOptions(t *testing.T) {
 	}
 	if !opts.Fractions {
 		t.Error("Default options should have Fractions enabled")
+	}
+	if opts.SafeMode {
+		t.Error("Default options should have SafeMode disabled for backward compatibility")
 	}
 }
 

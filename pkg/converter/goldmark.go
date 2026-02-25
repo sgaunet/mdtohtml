@@ -29,16 +29,29 @@ func NewGoldmarkConverter(opts Options) *GoldmarkConverter {
 		extensions = append(extensions, extension.Typographer)
 	}
 
-	md := goldmark.New(
-		goldmark.WithExtensions(extensions...),
-		goldmark.WithParserOptions(
-			parser.WithAutoHeadingID(),
-		),
-		goldmark.WithRendererOptions(
-			html.WithXHTML(),
-			html.WithUnsafe(),
-		),
-	)
+	var md goldmark.Markdown
+	if opts.SafeMode {
+		md = goldmark.New(
+			goldmark.WithExtensions(extensions...),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+			goldmark.WithRendererOptions(
+				html.WithXHTML(),
+			),
+		)
+	} else {
+		md = goldmark.New(
+			goldmark.WithExtensions(extensions...),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+			goldmark.WithRendererOptions(
+				html.WithXHTML(),
+				html.WithUnsafe(),
+			),
+		)
+	}
 
 	return &GoldmarkConverter{
 		md:      md,

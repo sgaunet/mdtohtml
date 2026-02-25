@@ -6,12 +6,13 @@ import (
 	"github.com/sgaunet/mdtohtml/pkg/converter"
 )
 
-func runConversion(inputFilePath, outputFilePath string, smartypants, latexdashes, fractions bool) error {
+func runConversion(inputFilePath, outputFilePath string, smartypants, latexdashes, fractions, safeMode bool) error {
 	// Create converter with options
 	options := converter.Options{
 		SmartPunctuation: smartypants,
 		LaTeXDashes:      latexdashes,
 		Fractions:        fractions,
+		SafeMode:         safeMode,
 	}
 
 	conv := converter.NewCompleteConverter(options)
