@@ -102,6 +102,10 @@ func (p *FileProcessor) findFilesRecursive(dir, pattern string) ([]string, error
 func (p *FileProcessor) processFile(file, inputDir, outputDir string) error {
 	outputPath := GetOutputPath(file, inputDir, outputDir)
 
+	if err := ValidateOutputPath(outputPath, outputDir); err != nil {
+		return err
+	}
+
 	// Create subdirectories if needed
 	const defaultDirMode = 0755
 	if err := os.MkdirAll(filepath.Dir(outputPath), defaultDirMode); err != nil {
