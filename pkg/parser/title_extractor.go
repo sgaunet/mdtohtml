@@ -11,113 +11,82 @@ func NewMarkdownTitleExtractor() *MarkdownTitleExtractor {
 }
 
 // ExtractTitle extracts the title from markdown content.
-// It looks for either a # prefix header or an underlined header.
+// It looks for either a # prefix header or an underlined header (===).
 func (e *MarkdownTitleExtractor) ExtractTitle(content []byte) string {
-	if len(content) == 0 {
+	pos := skipBlankLines(content)
+	if pos >= len(content) {
 		return ""
 	}
 
-	i := e.skipBlankLines(content, 0)
-	if i >= len(content) {
+	line, nextPos := readLine(content, pos)
+	if len(line) == 0 {
 		return ""
 	}
 
-	line1, nextPos := e.extractFirstLine(content, i)
-	if len(line1) == 0 {
-		return ""
-	}
-
-	// Check for a prefix header (# Title)
-	if title := e.checkPrefixHeader(line1); title != "" {
+	if title, ok := parsePrefixHeader(line); ok {
 		return title
 	}
 
-	// Check for an underlined header
-	if e.checkUnderlinedHeader(content, nextPos) {
-		return strings.TrimSpace(string(line1))
+	if hasEqualUnderline(content, nextPos) {
+		return strings.TrimSpace(string(line))
 	}
 
 	return ""
 }
 
-func (e *MarkdownTitleExtractor) skipBlankLines(input []byte, start int) int {
-	i := start
-	for i < len(input) && (input[i] == '\n' || input[i] == '\r') {
+// skipBlankLines returns the position of the first non-blank-line character.
+func skipBlankLines(content []byte) int {
+	i := 0
+	for i < len(content) && (content[i] == '\n' || content[i] == '\r') {
 		i++
 	}
 	return i
 }
 
-func (e *MarkdownTitleExtractor) extractFirstLine(input []byte, start int) ([]byte, int) {
-	i := e.skipCarriageReturn(input, start)
-	lineStart := i
-	i = e.findLineEnd(input, i)
-	line := input[lineStart:i]
-	i = e.skipLineEnding(input, i)
-	return line, i
+// readLine extracts the line starting at pos and returns the position after its line ending.
+func readLine(content []byte, pos int) ([]byte, int) {
+	start := pos
+	for pos < len(content) && content[pos] != '\n' && content[pos] != '\r' {
+		pos++
+	}
+	line := content[start:pos]
+
+	if pos < len(content) && content[pos] == '\r' && pos+1 < len(content) && content[pos+1] == '\n' {
+		pos += 2
+	} else if pos < len(content) {
+		pos++
+	}
+	return line, pos
 }
 
-func (e *MarkdownTitleExtractor) skipCarriageReturn(input []byte, pos int) int {
-	if pos < len(input) && input[pos] == '\r' && pos+1 < len(input) && input[pos+1] == '\n' {
-		return pos + 1
-	}
-	return pos
-}
-
-func (e *MarkdownTitleExtractor) findLineEnd(input []byte, start int) int {
-	i := start
-	for i < len(input) && input[i] != '\n' && input[i] != '\r' {
-		i++
-	}
-	return i
-}
-
-func (e *MarkdownTitleExtractor) skipLineEnding(input []byte, pos int) int {
-	const crlfLen = 2
-	if pos < len(input) && input[pos] == '\r' && pos+1 < len(input) && input[pos+1] == '\n' {
-		return pos + crlfLen
-	}
-	if pos < len(input) {
-		return pos + 1
-	}
-	return pos
-}
-
-func (e *MarkdownTitleExtractor) checkPrefixHeader(line []byte) string {
+// parsePrefixHeader checks if a line is a level-1 prefix header (# Title).
+func parsePrefixHeader(line []byte) (string, bool) {
 	if len(line) >= 3 && line[0] == '#' && (line[1] == ' ' || line[1] == '\t') {
-		return strings.TrimSpace(string(line[2:]))
+		return strings.TrimSpace(string(line[2:])), true
 	}
-	return ""
+	return "", false
 }
 
-func (e *MarkdownTitleExtractor) checkUnderlinedHeader(input []byte, pos int) bool {
-	if pos >= len(input) || input[pos] != '=' {
+// hasEqualUnderline checks if content at pos is a valid === underline (at least 3 equal signs).
+func hasEqualUnderline(content []byte, pos int) bool {
+	const minEqualSigns = 3
+
+	if pos >= len(content) || content[pos] != '=' {
 		return false
 	}
 
-	equalCount := e.countEqualSigns(input, pos)
-	endPos := e.skipToLineEnd(input, pos+equalCount)
-	
-	const minEqualSigns = 3
-	return e.isAtLineEnd(input, endPos) && equalCount >= minEqualSigns
-}
-
-func (e *MarkdownTitleExtractor) countEqualSigns(input []byte, start int) int {
-	count := 0
-	for i := start; i < len(input) && input[i] == '='; i++ {
-		count++
+	start := pos
+	for pos < len(content) && content[pos] == '=' {
+		pos++
 	}
-	return count
+
+	return (pos-start) >= minEqualSigns && isBlankUntilLineEnd(content, pos)
 }
 
-func (e *MarkdownTitleExtractor) skipToLineEnd(input []byte, start int) int {
-	i := start
-	for i < len(input) && (input[i] == ' ' || input[i] == '\t') {
-		i++
+// isBlankUntilLineEnd returns true if content from pos to the next line ending contains only whitespace.
+func isBlankUntilLineEnd(content []byte, pos int) bool {
+	for pos < len(content) && (content[pos] == ' ' || content[pos] == '\t') {
+		pos++
 	}
-	return i
-}
-
-func (e *MarkdownTitleExtractor) isAtLineEnd(input []byte, pos int) bool {
-	return pos >= len(input) || input[pos] == '\n' || input[pos] == '\r'
+	return pos >= len(content) || content[pos] == '\n' || content[pos] == '\r'
 }
