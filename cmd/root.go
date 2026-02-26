@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	// Version is set at build time.
-	Version     = "development"
+	// Version holds the application version string, injected at build time via ldflags.
+	Version = "development"
 	smartypants bool
 	latexdashes bool
 	fractions   bool
@@ -26,7 +26,8 @@ It supports GitHub Flavored Markdown, definition lists, footnotes, and typograph
   mdtohtml -smartypants=false input.md output.html`,
 }
 
-// Execute runs the root command.
+// Execute adds all child commands to the root command and sets flags appropriately.
+// It is called by main.main() and exits the process with status 1 on error.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
