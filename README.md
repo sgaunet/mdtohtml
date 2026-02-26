@@ -51,10 +51,16 @@ mdtohtml convert input.md output.html
 mdtohtml input.md output.html --smartypants=false --latexdashes=false
 ```
 
-**Options:**
-- `--smartypants` (default: true) - Apply smart typography substitutions
-- `--latexdashes` (default: true) - Use LaTeX-style dash rules
-- `--fractions` (default: true) - Convert fractions like 1/2 to ½
+**Typography options** (apply to all commands):
+
+| Flag | Default | Effect |
+|------|---------|--------|
+| `--smartypants` | `true` | `"x"` to \u201cx\u201d, `'x'` to \u2018x\u2019, `...` to \u2026 |
+| `--latexdashes` | `true` | `---` to em-dash (\u2014), `--` to en-dash (\u2013). When false: `--` to em-dash, `-` between words to en-dash |
+| `--fractions` | `true` | `1/2` to \u00bd, `1/4` to \u00bc, `3/4` to \u00be |
+| `--safe-mode` | `false` | Strip raw HTML to prevent XSS |
+
+These options are powered by the [Goldmark](https://github.com/yuin/goldmark) typographer extension.
 
 ### Batch Command
 
@@ -78,7 +84,7 @@ mdtohtml batch ./docs --out-dir ./html --smartypants=false
 - `-o, --out-dir` (default: ".") - Output directory for HTML files
 - `-p, --pattern` (default: "*.md") - File pattern to match
 - `-r, --recursive` - Process directories recursively
-- Plus all typography options from convert command
+- Plus all [typography options](#convert-command-default) from convert command
 
 ### Validate Command
 

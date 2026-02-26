@@ -23,11 +23,11 @@ func init() {
 	rootCmd.AddCommand(validateCmd)
 	
 	validateCmd.Flags().BoolVar(&smartypants, "smartypants", true,
-		"Apply smartypants-style substitutions during validation")
+		`Convert quotes to curly quotes, -- to en/em-dash, ... to ellipsis`)
 	validateCmd.Flags().BoolVar(&latexdashes, "latexdashes", true,
-		"Use LaTeX-style dash rules for smartypants during validation")
+		`LaTeX-style dashes: --- for em-dash, -- for en-dash (requires --smartypants)`)
 	validateCmd.Flags().BoolVar(&fractions, "fractions", true,
-		"Use improved fraction rules for smartypants during validation")
+		`Convert fractions: 1/2 to ½, 1/4 to ¼, 3/4 to ¾`)
 }
 
 func validateMarkdown(_ *cobra.Command, args []string) error {

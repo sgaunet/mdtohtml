@@ -19,7 +19,10 @@ func init() {
 	rootCmd.AddCommand(convertCmd)
 	
 	// Add the same flags to convert command
-	convertCmd.Flags().BoolVar(&smartypants, "smartypants", true, "Apply smartypants-style substitutions")
-	convertCmd.Flags().BoolVar(&latexdashes, "latexdashes", true, "Use LaTeX-style dash rules for smartypants")
-	convertCmd.Flags().BoolVar(&fractions, "fractions", true, "Use improved fraction rules for smartypants")
+	convertCmd.Flags().BoolVar(&smartypants, "smartypants", true,
+		`Convert quotes to curly quotes, -- to en/em-dash, ... to ellipsis`)
+	convertCmd.Flags().BoolVar(&latexdashes, "latexdashes", true,
+		`LaTeX-style dashes: --- for em-dash, -- for en-dash (requires --smartypants)`)
+	convertCmd.Flags().BoolVar(&fractions, "fractions", true,
+		`Convert fractions: 1/2 to ½, 1/4 to ¼, 3/4 to ¾`)
 }
