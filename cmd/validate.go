@@ -33,6 +33,10 @@ func init() {
 func validateMarkdown(_ *cobra.Command, args []string) error {
 	inputFilePath := args[0]
 
+	if err := validateInputFile(inputFilePath); err != nil {
+		return err
+	}
+
 	// Create converter with options
 	options := converter.Options{
 		SmartPunctuation: smartypants,

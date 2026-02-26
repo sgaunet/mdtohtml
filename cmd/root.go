@@ -51,5 +51,9 @@ func convert(_ *cobra.Command, args []string) error {
 	inputFilePath := args[0]
 	outputFilePath := args[1]
 
+	if err := validateInputFile(inputFilePath); err != nil {
+		return err
+	}
+
 	return runConversion(inputFilePath, outputFilePath, smartypants, latexdashes, fractions, safeMode)
 }

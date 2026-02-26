@@ -44,6 +44,10 @@ func init() {
 func batchConvert(_ *cobra.Command, args []string) error {
 	inputDir := args[0]
 
+	if err := validateInputDir(inputDir); err != nil {
+		return err
+	}
+
 	// Create converter with options
 	options := converter.Options{
 		SmartPunctuation: smartypants,
