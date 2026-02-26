@@ -80,20 +80,8 @@ func (c *CompleteConverter) ConvertFile(inputPath, outputPath string) error {
 		return err
 	}
 
-	out, err := os.Create(outputPath)
-	if err != nil {
-		if os.IsPermission(err) {
-			return fmt.Errorf("permission denied creating file '%s': %w", outputPath, err)
-		}
-		return fmt.Errorf("error creating file '%s': %w", outputPath, err)
-	}
-	defer func() {
-		if closeErr := out.Close(); closeErr != nil {
-			fmt.Fprintf(os.Stderr, "Error closing file: %v\n", closeErr)
-		}
-	}()
-
-	if _, err := out.Write(output); err != nil {
+	const defaultFileMode = 0644
+	if err := os.WriteFile(outputPath, output, defaultFileMode); err != nil {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied writing file '%s': %w", outputPath, err)
 		}
