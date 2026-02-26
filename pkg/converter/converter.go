@@ -12,13 +12,20 @@ type Converter interface {
 
 // Options configures the converter behavior.
 type Options struct {
-	// SmartPunctuation enables smart quotes, dashes, and ellipses
+	// SmartPunctuation enables typographic substitutions:
+	//   - Straight quotes ("x", 'x') become curly quotes (\u201cx\u201d, \u2018x\u2019)
+	//   - Double hyphens (--) become en-dash (\u2013) or em-dash (\u2014) depending on LaTeXDashes
+	//   - Triple hyphens (---) become em-dash (\u2014)
+	//   - Three dots (...) become ellipsis (\u2026)
 	SmartPunctuation bool
 
-	// LaTeXDashes uses LaTeX-style dash rules
+	// LaTeXDashes controls dash substitution style when SmartPunctuation is enabled.
+	// When true (default): --- produces em-dash (\u2014), -- produces en-dash (\u2013).
+	// When false: -- produces em-dash (\u2014), - between words produces en-dash (\u2013).
 	LaTeXDashes bool
 
-	// Fractions converts fractions like 1/2 to ½
+	// Fractions converts common fraction sequences to Unicode characters:
+	//   - 1/2 becomes \u00bd, 1/4 becomes \u00bc, 3/4 becomes \u00be
 	Fractions bool
 
 	// SafeMode disables raw HTML pass-through to prevent XSS

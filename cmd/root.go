@@ -35,9 +35,12 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().BoolVar(&smartypants, "smartypants", true, "Apply smartypants-style substitutions")
-	rootCmd.Flags().BoolVar(&latexdashes, "latexdashes", true, "Use LaTeX-style dash rules for smartypants")
-	rootCmd.Flags().BoolVar(&fractions, "fractions", true, "Use improved fraction rules for smartypants")
+	rootCmd.Flags().BoolVar(&smartypants, "smartypants", true,
+		`Convert quotes to curly quotes, -- to en/em-dash, ... to ellipsis`)
+	rootCmd.Flags().BoolVar(&latexdashes, "latexdashes", true,
+		`LaTeX-style dashes: --- for em-dash, -- for en-dash (requires --smartypants)`)
+	rootCmd.Flags().BoolVar(&fractions, "fractions", true,
+		`Convert fractions: 1/2 to ½, 1/4 to ¼, 3/4 to ¾`)
 	rootCmd.Flags().BoolVar(&safeMode, "safe-mode", false, "Disable raw HTML pass-through to prevent XSS")
 	rootCmd.Version = Version
 	rootCmd.SetVersionTemplate(`{{.Version}}
