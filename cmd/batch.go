@@ -1,4 +1,3 @@
-// Package cmd contains the CLI commands for mdtohtml
 package cmd
 
 import (
