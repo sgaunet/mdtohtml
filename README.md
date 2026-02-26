@@ -128,6 +128,47 @@ mdtohtml validate *.md
 mdtohtml input.md output.html --smartypants=false --fractions=false
 ```
 
+## Library Usage
+
+mdtohtml can also be used as a Go library. The `converter` package exposes two constructors:
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/sgaunet/mdtohtml/pkg/converter"
+	"github.com/sgaunet/mdtohtml/pkg/parser"
+	"github.com/sgaunet/mdtohtml/pkg/template"
+)
+
+func main() {
+	// Use default components
+	conv := converter.NewCompleteConverter(converter.DefaultOptions())
+	html, err := conv.Convert([]byte("# Hello\n\nWorld"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(html))
+
+	// Or inject custom components (title extractor, HTML template)
+	gc := converter.NewGoldmarkConverter(converter.DefaultOptions())
+	te := parser.NewMarkdownTitleExtractor()
+	ht := template.NewGitHubTemplate()
+
+	custom := converter.NewCompleteConverterWithComponents(gc, te, ht)
+	html, err = custom.Convert([]byte("# Custom\n\nWith custom components"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(html))
+}
+```
+
+Implement the `parser.TitleExtractor` or `template.HTMLTemplate` interfaces to replace the defaults with your own logic.
+
 # Docker Image
 
 There is a docker image to integrate the binary into your own docker image for example.

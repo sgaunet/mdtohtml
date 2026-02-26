@@ -24,7 +24,15 @@ func NewCompleteConverter(opts Options) *CompleteConverter {
 	}
 }
 
-// NewCompleteConverterWithComponents creates a complete converter with custom components.
+// NewCompleteConverterWithComponents creates a complete converter with custom components,
+// allowing callers to replace the default title extractor or HTML template.
+// This is useful for customizing the output format without modifying the core
+// markdown conversion logic.
+//
+// Parameters:
+//   - goldmarkConverter: the Goldmark-based markdown converter (use [NewGoldmarkConverter])
+//   - titleExtractor: extracts a document title from markdown (implements [parser.TitleExtractor])
+//   - htmlTemplate: wraps converted HTML with document structure and CSS (implements [template.HTMLTemplate])
 func NewCompleteConverterWithComponents(
 	goldmarkConverter *GoldmarkConverter,
 	titleExtractor parser.TitleExtractor,
