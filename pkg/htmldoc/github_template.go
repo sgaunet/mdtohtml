@@ -1,4 +1,4 @@
-package template
+package htmldoc
 
 import (
 	_ "embed"

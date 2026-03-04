@@ -1,5 +1,5 @@
-// Package parser provides markdown parsing utilities
-package parser
+// Package heading provides markdown title/heading extraction utilities
+package heading
 
 // TitleExtractor defines the interface for extracting titles from markdown content.
 type TitleExtractor interface {

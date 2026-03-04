@@ -1,10 +1,10 @@
-package template_test
+package htmldoc_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/sgaunet/mdtohtml/pkg/template"
+	"github.com/sgaunet/mdtohtml/pkg/htmldoc"
 )
 
 // TestGitHubTemplate_Wrap tests HTML document wrapping functionality
@@ -63,7 +63,7 @@ func TestGitHubTemplate_Wrap(t *testing.T) {
 		},
 	}
 
-	tmpl := template.NewGitHubTemplate()
+	tmpl := htmldoc.NewGitHubTemplate()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -122,7 +122,7 @@ func TestGitHubTemplate_InjectCSS(t *testing.T) {
 		},
 	}
 
-	tmpl := template.NewGitHubTemplate()
+	tmpl := htmldoc.NewGitHubTemplate()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -140,7 +140,7 @@ func TestGitHubTemplate_InjectCSS(t *testing.T) {
 // TestGitHubTemplate_WithCustomCSS tests custom CSS functionality
 func TestGitHubTemplate_WithCustomCSS(t *testing.T) {
 	customCSS := "body { background: red; }"
-	tmpl := template.NewGitHubTemplateWithCSS(customCSS)
+	tmpl := htmldoc.NewGitHubTemplateWithCSS(customCSS)
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n<title>Test</title>\n</head>\n<body></body>\n</html>"
 	result := tmpl.InjectCSS(html, "")
@@ -165,7 +165,7 @@ func TestGitHubTemplate_WithCustomCSS(t *testing.T) {
 // TestGitHubTemplate_WithAdditionalCSS tests additional CSS functionality
 func TestGitHubTemplate_WithAdditionalCSS(t *testing.T) {
 	additionalCSS := "body { background: yellow; }"
-	tmpl := template.NewGitHubTemplateWithAdditionalCSS(additionalCSS)
+	tmpl := htmldoc.NewGitHubTemplateWithAdditionalCSS(additionalCSS)
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n<title>Test</title>\n</head>\n<body></body>\n</html>"
 	result := tmpl.InjectCSS(html, "")
@@ -195,7 +195,7 @@ func TestGitHubTemplate_WithAdditionalCSS(t *testing.T) {
 
 // TestGitHubTemplate_Integration tests the complete workflow
 func TestGitHubTemplate_Integration(t *testing.T) {
-	tmpl := template.NewGitHubTemplate()
+	tmpl := htmldoc.NewGitHubTemplate()
 
 	content := "<h1>My Document</h1><p>This is a test document.</p>"
 	title := "Integration Test"

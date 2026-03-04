@@ -1,5 +1,5 @@
-// Package template provides HTML templating functionality
-package template
+// Package htmldoc provides HTML document generation and CSS injection
+package htmldoc
 
 // HTMLTemplate defines the interface for HTML template operations.
 type HTMLTemplate interface {
