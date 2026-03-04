@@ -8,11 +8,15 @@ import (
 
 var (
 	// Version holds the application version string, injected at build time via ldflags.
-	Version = "development"
-	smartypants bool
-	latexdashes bool
-	fractions   bool
-	safeMode    bool
+	Version          = "development"
+	smartypants      bool
+	latexdashes      bool
+	fractions        bool
+	safeMode         bool
+	cssFile          string
+	cssURL           string
+	additionalCSSFile string
+	noCSS            bool
 )
 
 var rootCmd = &cobra.Command{
@@ -42,6 +46,10 @@ func init() {
 	rootCmd.Flags().BoolVar(&fractions, "fractions", true,
 		`Convert fractions: 1/2 to ½, 1/4 to ¼, 3/4 to ¾`)
 	rootCmd.Flags().BoolVar(&safeMode, "safe-mode", false, "Disable raw HTML pass-through to prevent XSS")
+	rootCmd.Flags().StringVar(&cssFile, "css-file", "", "Path to a CSS file to use instead of the default GitHub CSS")
+	rootCmd.Flags().StringVar(&cssURL, "css-url", "", "URL to fetch CSS from instead of the default GitHub CSS")
+	rootCmd.Flags().StringVar(&additionalCSSFile, "additional-css", "", "Path to a CSS file to append to the default CSS")
+	rootCmd.Flags().BoolVar(&noCSS, "no-css", false, "Disable CSS injection entirely")
 	rootCmd.Version = Version
 	rootCmd.SetVersionTemplate(`{{.Version}}
 `)
@@ -55,5 +63,18 @@ func convert(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	return runConversion(inputFilePath, outputFilePath, smartypants, latexdashes, fractions, safeMode)
+	source, additional, err := resolveCSSOptions(
+		cssFile, cssURL, additionalCSSFile, noCSS,
+	)
+	if err != nil {
+		return err
+	}
+
+	css := cssOptions{
+		source: source, additional: additional, noCSS: noCSS,
+	}
+	return runConversion(
+		inputFilePath, outputFilePath,
+		smartypants, latexdashes, fractions, safeMode, css,
+	)
 }

@@ -13,14 +13,28 @@ type CompleteConverter struct {
 	goldmarkConverter *GoldmarkConverter
 	titleExtractor    parser.TitleExtractor
 	htmlTemplate      template.HTMLTemplate
+	noCSS             bool
 }
 
 // NewCompleteConverter creates a new complete converter with all components.
 func NewCompleteConverter(opts Options) *CompleteConverter {
+	var tmpl template.HTMLTemplate
+	switch {
+	case opts.CSSSource != "" && opts.AdditionalCSS != "":
+		tmpl = template.NewGitHubTemplateWithCSS(opts.CSSSource + "\n" + opts.AdditionalCSS)
+	case opts.CSSSource != "":
+		tmpl = template.NewGitHubTemplateWithCSS(opts.CSSSource)
+	case opts.AdditionalCSS != "":
+		tmpl = template.NewGitHubTemplateWithAdditionalCSS(opts.AdditionalCSS)
+	default:
+		tmpl = template.NewGitHubTemplate()
+	}
+
 	return &CompleteConverter{
 		goldmarkConverter: NewGoldmarkConverter(opts),
 		titleExtractor:    parser.NewMarkdownTitleExtractor(),
-		htmlTemplate:      template.NewGitHubTemplate(),
+		htmlTemplate:      tmpl,
+		noCSS:             opts.NoCSS,
 	}
 }
 
@@ -59,8 +73,10 @@ func (c *CompleteConverter) Convert(input []byte) ([]byte, error) {
 	// Wrap in HTML document
 	html := c.htmlTemplate.Wrap(string(htmlContent), title)
 
-	// Inject CSS
-	html = c.htmlTemplate.InjectCSS(html, "")
+	// Inject CSS unless disabled
+	if !c.noCSS {
+		html = c.htmlTemplate.InjectCSS(html, "")
+	}
 
 	return []byte(html), nil
 }

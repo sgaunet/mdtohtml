@@ -28,6 +28,14 @@ func NewGitHubTemplateWithCSS(css string) *GitHubTemplate {
 	}
 }
 
+// NewGitHubTemplateWithAdditionalCSS creates a GitHub-style HTML template
+// with the default CSS plus additional CSS appended.
+func NewGitHubTemplateWithAdditionalCSS(additional string) *GitHubTemplate {
+	return &GitHubTemplate{
+		css: githubCSS + "\n" + additional,
+	}
+}
+
 // Wrap wraps HTML content with a complete HTML document structure.
 func (t *GitHubTemplate) Wrap(content, title string) string {
 	return fmt.Sprintf(`<!DOCTYPE html>

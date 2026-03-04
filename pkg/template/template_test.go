@@ -162,6 +162,37 @@ func TestGitHubTemplate_WithCustomCSS(t *testing.T) {
 	}
 }
 
+// TestGitHubTemplate_WithAdditionalCSS tests additional CSS functionality
+func TestGitHubTemplate_WithAdditionalCSS(t *testing.T) {
+	additionalCSS := "body { background: yellow; }"
+	tmpl := template.NewGitHubTemplateWithAdditionalCSS(additionalCSS)
+
+	html := "<!DOCTYPE html>\n<html>\n<head>\n<title>Test</title>\n</head>\n<body></body>\n</html>"
+	result := tmpl.InjectCSS(html, "")
+
+	// Should contain the default CSS marker
+	if !strings.Contains(result, ".octicon") {
+		t.Error("Should contain default GitHub CSS (.octicon)")
+	}
+
+	// Should contain the additional CSS
+	if !strings.Contains(result, additionalCSS) {
+		t.Error("Should contain additional CSS")
+	}
+
+	// Override CSS should replace all
+	overrideCSS := "p { color: green; }"
+	result = tmpl.InjectCSS(html, overrideCSS)
+
+	if !strings.Contains(result, overrideCSS) {
+		t.Error("Override CSS should be present")
+	}
+
+	if strings.Contains(result, additionalCSS) {
+		t.Error("Additional CSS should not be present when overridden")
+	}
+}
+
 // TestGitHubTemplate_Integration tests the complete workflow
 func TestGitHubTemplate_Integration(t *testing.T) {
 	tmpl := template.NewGitHubTemplate()
