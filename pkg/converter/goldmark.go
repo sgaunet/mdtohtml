@@ -63,7 +63,7 @@ func NewGoldmarkConverter(opts Options) *GoldmarkConverter {
 func (c *GoldmarkConverter) Convert(input []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	if err := c.md.Convert(input, &buf); err != nil {
-		return nil, fmt.Errorf("error converting markdown: %w", err)
+		return nil, fmt.Errorf("converting markdown: %w", err)
 	}
 	return buf.Bytes(), nil
 }
@@ -75,7 +75,7 @@ func (c *GoldmarkConverter) ConvertFile(inputPath, outputPath string) error {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied reading file '%s': %w", inputPath, err)
 		}
-		return fmt.Errorf("error reading file '%s': %w", inputPath, err)
+		return fmt.Errorf("reading file '%s': %w", inputPath, err)
 	}
 
 	output, err := c.Convert(input)
@@ -88,7 +88,7 @@ func (c *GoldmarkConverter) ConvertFile(inputPath, outputPath string) error {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied writing file '%s': %w", outputPath, err)
 		}
-		return fmt.Errorf("error writing file '%s': %w", outputPath, err)
+		return fmt.Errorf("writing file '%s': %w", outputPath, err)
 	}
 
 	return nil
