@@ -72,7 +72,7 @@ func (c *CompleteConverter) ConvertFile(inputPath, outputPath string) error {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied reading file '%s': %w", inputPath, err)
 		}
-		return fmt.Errorf("reading file '%s': %w", inputPath, err)
+		return fmt.Errorf("error reading file '%s': %w", inputPath, err)
 	}
 
 	output, err := c.Convert(input)
@@ -85,7 +85,7 @@ func (c *CompleteConverter) ConvertFile(inputPath, outputPath string) error {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied writing file '%s': %w", outputPath, err)
 		}
-		return fmt.Errorf("writing file '%s': %w", outputPath, err)
+		return fmt.Errorf("error writing file '%s': %w", outputPath, err)
 	}
 
 	return nil
