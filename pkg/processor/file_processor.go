@@ -38,13 +38,13 @@ func (p *FileProcessor) ProcessDirectory(dir string, options ProcessOptions) err
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied creating output directory '%s': %w", options.OutputDir, err)
 		}
-		return fmt.Errorf("creating output directory '%s': %w", options.OutputDir, err)
+		return fmt.Errorf("error creating output directory '%s': %w", options.OutputDir, err)
 	}
 
 	// Find files to process
 	files, err := p.findFiles(dir, options)
 	if err != nil {
-		return fmt.Errorf("finding files matching '%s' in '%s': %w", options.Pattern, dir, err)
+		return fmt.Errorf("error finding files matching '%s' in '%s': %w", options.Pattern, dir, err)
 	}
 
 	if len(files) == 0 {
@@ -70,7 +70,7 @@ func (p *FileProcessor) findFiles(dir string, options ProcessOptions) ([]string,
 	}
 	files, err := filepath.Glob(filepath.Join(dir, options.Pattern))
 	if err != nil {
-		return nil, fmt.Errorf("finding files with pattern '%s': %w", options.Pattern, err)
+		return nil, fmt.Errorf("error finding files with pattern '%s': %w", options.Pattern, err)
 	}
 	return files, nil
 }
@@ -94,7 +94,7 @@ func (p *FileProcessor) findFilesRecursive(dir, pattern string) ([]string, error
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("walking directory '%s': %w", dir, err)
+		return nil, fmt.Errorf("error walking directory '%s': %w", dir, err)
 	}
 	return files, nil
 }
@@ -112,12 +112,12 @@ func (p *FileProcessor) processFile(file, inputDir, outputDir string) error {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied creating directory for '%s': %w", outputPath, err)
 		}
-		return fmt.Errorf("creating directory for '%s': %w", outputPath, err)
+		return fmt.Errorf("error creating directory for '%s': %w", outputPath, err)
 	}
 
 	fmt.Printf("Converting %s -> %s\n", file, outputPath)
 	if err := p.converter.ConvertFile(file, outputPath); err != nil {
-		return fmt.Errorf("converting '%s': %w", file, err)
+		return fmt.Errorf("error converting '%s': %w", file, err)
 	}
 
 	return nil

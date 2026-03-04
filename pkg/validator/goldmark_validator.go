@@ -35,7 +35,7 @@ func (v *GoldmarkValidator) ValidateFile(path string) error {
 		if os.IsPermission(err) {
 			return fmt.Errorf("permission denied reading file '%s': %w", path, err)
 		}
-		return fmt.Errorf("reading file '%s': %w", path, err)
+		return fmt.Errorf("error reading file '%s': %w", path, err)
 	}
 
 	return v.Validate(content)
