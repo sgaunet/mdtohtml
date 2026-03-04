@@ -30,6 +30,17 @@ type Options struct {
 
 	// SafeMode disables raw HTML pass-through to prevent XSS
 	SafeMode bool
+
+	// CSSSource is the full CSS text replacing the default embedded CSS.
+	// Resolved by the CLI layer from --css-file or --css-url.
+	CSSSource string
+
+	// AdditionalCSS is extra CSS text appended to the default (or replaced) CSS.
+	// Resolved by the CLI layer from --additional-css.
+	AdditionalCSS string
+
+	// NoCSS skips CSS injection entirely.
+	NoCSS bool
 }
 
 // DefaultOptions returns the default converter options.

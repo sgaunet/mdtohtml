@@ -345,6 +345,80 @@ func TestAllComponentIntegration(t *testing.T) {
 	}
 }
 
+// TestCSSCustomizationWorkflow tests end-to-end CSS customization through Options
+func TestCSSCustomizationWorkflow(t *testing.T) {
+	mdInput := []byte("# CSS Test\n\nThis tests CSS customization.")
+
+	t.Run("NoCSS produces no style block", func(t *testing.T) {
+		conv := converter.NewCompleteConverter(converter.Options{NoCSS: true})
+		output, err := conv.Convert(mdInput)
+		if err != nil {
+			t.Fatalf("Convert() error = %v", err)
+		}
+		if strings.Contains(string(output), "<style>") {
+			t.Error("NoCSS should produce no <style> block")
+		}
+		if !strings.Contains(string(output), "CSS Test") {
+			t.Error("Content should still be present")
+		}
+	})
+
+	t.Run("CSSSource replaces default CSS", func(t *testing.T) {
+		custom := "body { background: #000; }"
+		conv := converter.NewCompleteConverter(converter.Options{CSSSource: custom})
+		output, err := conv.Convert(mdInput)
+		if err != nil {
+			t.Fatalf("Convert() error = %v", err)
+		}
+		outputStr := string(output)
+		if !strings.Contains(outputStr, custom) {
+			t.Error("Custom CSSSource should be present")
+		}
+		if strings.Contains(outputStr, ".octicon") {
+			t.Error("Default CSS should not be present when CSSSource is set")
+		}
+	})
+
+	t.Run("AdditionalCSS appends to default", func(t *testing.T) {
+		extra := "footer { display: none; }"
+		conv := converter.NewCompleteConverter(converter.Options{AdditionalCSS: extra})
+		output, err := conv.Convert(mdInput)
+		if err != nil {
+			t.Fatalf("Convert() error = %v", err)
+		}
+		outputStr := string(output)
+		if !strings.Contains(outputStr, ".octicon") {
+			t.Error("Default CSS should be present")
+		}
+		if !strings.Contains(outputStr, extra) {
+			t.Error("Additional CSS should be present")
+		}
+	})
+
+	t.Run("file-based workflow with NoCSS", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		inputFile := filepath.Join(tmpDir, "test.md")
+		outputFile := filepath.Join(tmpDir, "test.html")
+
+		if err := os.WriteFile(inputFile, mdInput, 0644); err != nil {
+			t.Fatalf("Failed to create input file: %v", err)
+		}
+
+		conv := converter.NewCompleteConverter(converter.Options{NoCSS: true})
+		if err := conv.ConvertFile(inputFile, outputFile); err != nil {
+			t.Fatalf("ConvertFile() error = %v", err)
+		}
+
+		output, err := os.ReadFile(outputFile)
+		if err != nil {
+			t.Fatalf("Failed to read output: %v", err)
+		}
+		if strings.Contains(string(output), "<style>") {
+			t.Error("File output with NoCSS should not contain <style>")
+		}
+	})
+}
+
 // Custom components for testing
 type CustomTemplate struct {
 	prefix string

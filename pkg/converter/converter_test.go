@@ -449,6 +449,88 @@ func TestGoldmarkConverter_SafeMode(t *testing.T) {
 	})
 }
 
+// TestDefaultOptions_CSSFields tests that CSS fields are zero-valued by default
+func TestDefaultOptions_CSSFields(t *testing.T) {
+	opts := converter.DefaultOptions()
+
+	if opts.CSSSource != "" {
+		t.Error("Default CSSSource should be empty")
+	}
+	if opts.AdditionalCSS != "" {
+		t.Error("Default AdditionalCSS should be empty")
+	}
+	if opts.NoCSS {
+		t.Error("Default NoCSS should be false")
+	}
+}
+
+// TestCompleteConverter_CSSOptions tests CSS customization through Options
+func TestCompleteConverter_CSSOptions(t *testing.T) {
+	mdInput := []byte("# Test\n\nHello.")
+
+	tests := []struct {
+		name        string
+		options     converter.Options
+		contains    []string
+		notContains []string
+	}{
+		{
+			name:     "default: embedded CSS present",
+			options:  converter.DefaultOptions(),
+			contains: []string{"<style>", ".octicon"},
+		},
+		{
+			name:        "NoCSS: no style block",
+			options:     converter.Options{NoCSS: true},
+			notContains: []string{"<style>"},
+		},
+		{
+			name:        "CSSSource replaces default",
+			options:     converter.Options{CSSSource: "body { color: red; }"},
+			contains:    []string{"<style>", "body { color: red; }"},
+			notContains: []string{".octicon"},
+		},
+		{
+			name:     "AdditionalCSS appended to default",
+			options:  converter.Options{AdditionalCSS: "p { margin: 0; }"},
+			contains: []string{".octicon", "p { margin: 0; }"},
+		},
+		{
+			name:        "CSSSource + AdditionalCSS",
+			options:     converter.Options{CSSSource: "body { color: red; }", AdditionalCSS: "p { margin: 0; }"},
+			contains:    []string{"body { color: red; }", "p { margin: 0; }"},
+			notContains: []string{".octicon"},
+		},
+		{
+			name:        "NoCSS wins over CSSSource and AdditionalCSS",
+			options:     converter.Options{NoCSS: true, CSSSource: "body { color: red; }", AdditionalCSS: "p { margin: 0; }"},
+			notContains: []string{"<style>", "body { color: red; }", "p { margin: 0; }"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			conv := converter.NewCompleteConverter(tt.options)
+			output, err := conv.Convert(mdInput)
+			if err != nil {
+				t.Fatalf("Convert() error = %v", err)
+			}
+
+			outputStr := string(output)
+			for _, s := range tt.contains {
+				if !strings.Contains(outputStr, s) {
+					t.Errorf("expected output to contain %q", s)
+				}
+			}
+			for _, s := range tt.notContains {
+				if strings.Contains(outputStr, s) {
+					t.Errorf("expected output NOT to contain %q", s)
+				}
+			}
+		})
+	}
+}
+
 // TestDefaultOptions tests the default options function
 func TestDefaultOptions(t *testing.T) {
 	opts := converter.DefaultOptions()

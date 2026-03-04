@@ -1,10 +1,10 @@
-package template_test
+package htmldoc_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/sgaunet/mdtohtml/pkg/template"
+	"github.com/sgaunet/mdtohtml/pkg/htmldoc"
 )
 
 // TestGitHubTemplate_Wrap tests HTML document wrapping functionality
@@ -63,7 +63,7 @@ func TestGitHubTemplate_Wrap(t *testing.T) {
 		},
 	}
 
-	tmpl := template.NewGitHubTemplate()
+	tmpl := htmldoc.NewGitHubTemplate()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -122,7 +122,7 @@ func TestGitHubTemplate_InjectCSS(t *testing.T) {
 		},
 	}
 
-	tmpl := template.NewGitHubTemplate()
+	tmpl := htmldoc.NewGitHubTemplate()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -140,7 +140,7 @@ func TestGitHubTemplate_InjectCSS(t *testing.T) {
 // TestGitHubTemplate_WithCustomCSS tests custom CSS functionality
 func TestGitHubTemplate_WithCustomCSS(t *testing.T) {
 	customCSS := "body { background: red; }"
-	tmpl := template.NewGitHubTemplateWithCSS(customCSS)
+	tmpl := htmldoc.NewGitHubTemplateWithCSS(customCSS)
 
 	html := "<!DOCTYPE html>\n<html>\n<head>\n<title>Test</title>\n</head>\n<body></body>\n</html>"
 	result := tmpl.InjectCSS(html, "")
@@ -162,9 +162,40 @@ func TestGitHubTemplate_WithCustomCSS(t *testing.T) {
 	}
 }
 
+// TestGitHubTemplate_WithAdditionalCSS tests additional CSS functionality
+func TestGitHubTemplate_WithAdditionalCSS(t *testing.T) {
+	additionalCSS := "body { background: yellow; }"
+	tmpl := htmldoc.NewGitHubTemplateWithAdditionalCSS(additionalCSS)
+
+	html := "<!DOCTYPE html>\n<html>\n<head>\n<title>Test</title>\n</head>\n<body></body>\n</html>"
+	result := tmpl.InjectCSS(html, "")
+
+	// Should contain the default CSS marker
+	if !strings.Contains(result, ".octicon") {
+		t.Error("Should contain default GitHub CSS (.octicon)")
+	}
+
+	// Should contain the additional CSS
+	if !strings.Contains(result, additionalCSS) {
+		t.Error("Should contain additional CSS")
+	}
+
+	// Override CSS should replace all
+	overrideCSS := "p { color: green; }"
+	result = tmpl.InjectCSS(html, overrideCSS)
+
+	if !strings.Contains(result, overrideCSS) {
+		t.Error("Override CSS should be present")
+	}
+
+	if strings.Contains(result, additionalCSS) {
+		t.Error("Additional CSS should not be present when overridden")
+	}
+}
+
 // TestGitHubTemplate_Integration tests the complete workflow
 func TestGitHubTemplate_Integration(t *testing.T) {
-	tmpl := template.NewGitHubTemplate()
+	tmpl := htmldoc.NewGitHubTemplate()
 
 	content := "<h1>My Document</h1><p>This is a test document.</p>"
 	title := "Integration Test"

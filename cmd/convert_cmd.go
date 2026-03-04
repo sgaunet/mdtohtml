@@ -17,7 +17,7 @@ This is the default behavior when no subcommand is specified.`,
 
 func init() {
 	rootCmd.AddCommand(convertCmd)
-	
+
 	// Add the same flags to convert command
 	convertCmd.Flags().BoolVar(&smartypants, "smartypants", true,
 		`Convert quotes to curly quotes, -- to en/em-dash, ... to ellipsis`)
@@ -25,4 +25,9 @@ func init() {
 		`LaTeX-style dashes: --- for em-dash, -- for en-dash (requires --smartypants)`)
 	convertCmd.Flags().BoolVar(&fractions, "fractions", true,
 		`Convert fractions: 1/2 to ½, 1/4 to ¼, 3/4 to ¾`)
+	convertCmd.Flags().StringVar(&cssFile, "css-file", "", "Path to a CSS file to use instead of the default GitHub CSS")
+	convertCmd.Flags().StringVar(&cssURL, "css-url", "", "URL to fetch CSS from instead of the default GitHub CSS")
+	convertCmd.Flags().StringVar(&additionalCSSFile, "additional-css", "",
+		"Path to a CSS file to append to the default CSS")
+	convertCmd.Flags().BoolVar(&noCSS, "no-css", false, "Disable CSS injection entirely")
 }

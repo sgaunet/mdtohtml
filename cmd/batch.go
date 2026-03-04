@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	outputDir  string
-	pattern    string
-	recursive  bool
+	outputDir string
+	pattern   string
+	recursive bool
 )
 
 var batchCmd = &cobra.Command{
@@ -28,7 +28,7 @@ By default, processes all *.md files in the specified directory.`,
 
 func init() {
 	rootCmd.AddCommand(batchCmd)
-	
+
 	batchCmd.Flags().StringVarP(&outputDir, "out-dir", "o", ".", "Output directory for HTML files")
 	batchCmd.Flags().StringVarP(&pattern, "pattern", "p", "*.md", "File pattern to match")
 	batchCmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "Process directories recursively")
@@ -39,6 +39,10 @@ func init() {
 	batchCmd.Flags().BoolVar(&fractions, "fractions", true,
 		`Convert fractions: 1/2 to ½, 1/4 to ¼, 3/4 to ¾`)
 	batchCmd.Flags().BoolVar(&safeMode, "safe-mode", false, "Disable raw HTML pass-through to prevent XSS")
+	batchCmd.Flags().StringVar(&cssFile, "css-file", "", "Path to a CSS file to use instead of the default GitHub CSS")
+	batchCmd.Flags().StringVar(&cssURL, "css-url", "", "URL to fetch CSS from instead of the default GitHub CSS")
+	batchCmd.Flags().StringVar(&additionalCSSFile, "additional-css", "", "Path to a CSS file to append to the default CSS")
+	batchCmd.Flags().BoolVar(&noCSS, "no-css", false, "Disable CSS injection entirely")
 }
 
 func batchConvert(_ *cobra.Command, args []string) error {
@@ -48,12 +52,22 @@ func batchConvert(_ *cobra.Command, args []string) error {
 		return err
 	}
 
+	source, additional, err := resolveCSSOptions(
+		cssFile, cssURL, additionalCSSFile, noCSS,
+	)
+	if err != nil {
+		return err
+	}
+
 	// Create converter with options
 	options := converter.Options{
 		SmartPunctuation: smartypants,
 		LaTeXDashes:      latexdashes,
 		Fractions:        fractions,
 		SafeMode:         safeMode,
+		CSSSource:        source,
+		AdditionalCSS:    additional,
+		NoCSS:            noCSS,
 	}
 
 	conv := converter.NewCompleteConverter(options)

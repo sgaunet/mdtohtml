@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/sgaunet/mdtohtml/pkg/converter"
-	"github.com/sgaunet/mdtohtml/pkg/parser"
-	"github.com/sgaunet/mdtohtml/pkg/template"
+	"github.com/sgaunet/mdtohtml/pkg/heading"
+	"github.com/sgaunet/mdtohtml/pkg/htmldoc"
 )
 
 func ExampleNewCompleteConverter() {
@@ -24,8 +24,8 @@ func ExampleNewCompleteConverter() {
 
 func ExampleNewCompleteConverterWithComponents() {
 	gc := converter.NewGoldmarkConverter(converter.DefaultOptions())
-	te := parser.NewMarkdownTitleExtractor()
-	ht := template.NewGitHubTemplate()
+	te := heading.NewMarkdownTitleExtractor()
+	ht := htmldoc.NewGitHubTemplate()
 
 	conv := converter.NewCompleteConverterWithComponents(gc, te, ht)
 

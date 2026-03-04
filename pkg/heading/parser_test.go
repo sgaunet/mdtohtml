@@ -1,9 +1,9 @@
-package parser_test
+package heading_test
 
 import (
 	"testing"
 
-	"github.com/sgaunet/mdtohtml/pkg/parser"
+	"github.com/sgaunet/mdtohtml/pkg/heading"
 )
 
 // TestMarkdownTitleExtractor_ExtractTitle tests title extraction functionality
@@ -95,7 +95,7 @@ func TestMarkdownTitleExtractor_ExtractTitle(t *testing.T) {
 		},
 	}
 
-	extractor := parser.NewMarkdownTitleExtractor()
+	extractor := heading.NewMarkdownTitleExtractor()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestMarkdownTitleExtractor_ExtractTitle(t *testing.T) {
 
 // TestMarkdownTitleExtractor_ExtractTitle_EdgeCases tests edge cases and boundary conditions
 func TestMarkdownTitleExtractor_ExtractTitle_EdgeCases(t *testing.T) {
-	extractor := parser.NewMarkdownTitleExtractor()
+	extractor := heading.NewMarkdownTitleExtractor()
 
 	t.Run("very long title", func(t *testing.T) {
 		longTitle := "This is a very long title that exceeds normal length expectations and contains many words to test handling of lengthy content"
@@ -155,7 +155,7 @@ func TestMarkdownTitleExtractor_ExtractTitle_EdgeCases(t *testing.T) {
 
 // BenchmarkMarkdownTitleExtractor_ExtractTitle benchmarks the title extraction performance
 func BenchmarkMarkdownTitleExtractor_ExtractTitle(b *testing.B) {
-	extractor := parser.NewMarkdownTitleExtractor()
+	extractor := heading.NewMarkdownTitleExtractor()
 	input := []byte("# This is a test title\n\nThis is some content that follows the title and contains multiple paragraphs.\n\nMore content here.")
 
 	b.ResetTimer()

@@ -4,23 +4,37 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sgaunet/mdtohtml/pkg/parser"
-	"github.com/sgaunet/mdtohtml/pkg/template"
+	"github.com/sgaunet/mdtohtml/pkg/heading"
+	"github.com/sgaunet/mdtohtml/pkg/htmldoc"
 )
 
 // CompleteConverter combines markdown conversion with title extraction and HTML templating.
 type CompleteConverter struct {
 	goldmarkConverter *GoldmarkConverter
-	titleExtractor    parser.TitleExtractor
-	htmlTemplate      template.HTMLTemplate
+	titleExtractor    heading.TitleExtractor
+	htmlTemplate      htmldoc.HTMLTemplate
+	noCSS             bool
 }
 
 // NewCompleteConverter creates a new complete converter with all components.
 func NewCompleteConverter(opts Options) *CompleteConverter {
+	var tmpl htmldoc.HTMLTemplate
+	switch {
+	case opts.CSSSource != "" && opts.AdditionalCSS != "":
+		tmpl = htmldoc.NewGitHubTemplateWithCSS(opts.CSSSource + "\n" + opts.AdditionalCSS)
+	case opts.CSSSource != "":
+		tmpl = htmldoc.NewGitHubTemplateWithCSS(opts.CSSSource)
+	case opts.AdditionalCSS != "":
+		tmpl = htmldoc.NewGitHubTemplateWithAdditionalCSS(opts.AdditionalCSS)
+	default:
+		tmpl = htmldoc.NewGitHubTemplate()
+	}
+
 	return &CompleteConverter{
 		goldmarkConverter: NewGoldmarkConverter(opts),
-		titleExtractor:    parser.NewMarkdownTitleExtractor(),
-		htmlTemplate:      template.NewGitHubTemplate(),
+		titleExtractor:    heading.NewMarkdownTitleExtractor(),
+		htmlTemplate:      tmpl,
+		noCSS:             opts.NoCSS,
 	}
 }
 
@@ -31,12 +45,12 @@ func NewCompleteConverter(opts Options) *CompleteConverter {
 //
 // Parameters:
 //   - goldmarkConverter: the Goldmark-based markdown converter (use [NewGoldmarkConverter])
-//   - titleExtractor: extracts a document title from markdown (implements [parser.TitleExtractor])
-//   - htmlTemplate: wraps converted HTML with document structure and CSS (implements [template.HTMLTemplate])
+//   - titleExtractor: extracts a document title from markdown (implements [heading.TitleExtractor])
+//   - htmlTemplate: wraps converted HTML with document structure and CSS (implements [htmldoc.HTMLTemplate])
 func NewCompleteConverterWithComponents(
 	goldmarkConverter *GoldmarkConverter,
-	titleExtractor parser.TitleExtractor,
-	htmlTemplate template.HTMLTemplate,
+	titleExtractor heading.TitleExtractor,
+	htmlTemplate htmldoc.HTMLTemplate,
 ) *CompleteConverter {
 	return &CompleteConverter{
 		goldmarkConverter: goldmarkConverter,
@@ -59,8 +73,10 @@ func (c *CompleteConverter) Convert(input []byte) ([]byte, error) {
 	// Wrap in HTML document
 	html := c.htmlTemplate.Wrap(string(htmlContent), title)
 
-	// Inject CSS
-	html = c.htmlTemplate.InjectCSS(html, "")
+	// Inject CSS unless disabled
+	if !c.noCSS {
+		html = c.htmlTemplate.InjectCSS(html, "")
+	}
 
 	return []byte(html), nil
 }

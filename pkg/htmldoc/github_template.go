@@ -1,4 +1,4 @@
-package template
+package htmldoc
 
 import (
 	_ "embed"
@@ -25,6 +25,14 @@ func NewGitHubTemplate() *GitHubTemplate {
 func NewGitHubTemplateWithCSS(css string) *GitHubTemplate {
 	return &GitHubTemplate{
 		css: css,
+	}
+}
+
+// NewGitHubTemplateWithAdditionalCSS creates a GitHub-style HTML template
+// with the default CSS plus additional CSS appended.
+func NewGitHubTemplateWithAdditionalCSS(additional string) *GitHubTemplate {
+	return &GitHubTemplate{
+		css: githubCSS + "\n" + additional,
 	}
 }
 
