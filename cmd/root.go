@@ -8,15 +8,26 @@ import (
 
 var (
 	// Version holds the application version string, injected at build time via ldflags.
-	Version          = "development"
-	smartypants      bool
-	latexdashes      bool
-	fractions        bool
-	safeMode         bool
-	cssFile          string
-	cssURL           string
+	Version           = "development"
+	smartypants       bool
+	latexdashes       bool
+	fractions         bool
+	safeMode          bool
+	cssFile           string
+	cssURL            string
 	additionalCSSFile string
-	noCSS            bool
+	noCSS             bool
+	outputFormat      string // "", "html", "pdf"; empty = auto-detect from extension
+	pageSize          string // PDF page size, e.g. "A4", "Letter"
+	marginFlag        string // PDF margin, e.g. "1.25in", "90", "2.5cm"
+)
+
+const defaultMarginFlag = "1.25in"
+
+// Recognised output formats.
+const (
+	formatHTML = "html"
+	formatPDF  = "pdf"
 )
 
 var rootCmd = &cobra.Command{
@@ -50,6 +61,12 @@ func init() {
 	rootCmd.Flags().StringVar(&cssURL, "css-url", "", "URL to fetch CSS from instead of the default GitHub CSS")
 	rootCmd.Flags().StringVar(&additionalCSSFile, "additional-css", "", "Path to a CSS file to append to the default CSS")
 	rootCmd.Flags().BoolVar(&noCSS, "no-css", false, "Disable CSS injection entirely")
+	rootCmd.Flags().StringVar(&outputFormat, "format", "",
+		`Output format: "html" or "pdf" (default: auto-detect from output file extension)`)
+	rootCmd.Flags().StringVar(&pageSize, "page-size", "A4",
+		`PDF page size when --format=pdf: A4, Letter, Legal, A3, A5, Tabloid`)
+	rootCmd.Flags().StringVar(&marginFlag, "margin", defaultMarginFlag,
+		`PDF page margin (units: pt, in, cm, mm; bare numbers = pt)`)
 	rootCmd.Version = Version
 	rootCmd.SetVersionTemplate(`{{.Version}}
 `)
@@ -73,8 +90,13 @@ func convert(_ *cobra.Command, args []string) error {
 	css := cssOptions{
 		source: source, additional: additional, noCSS: noCSS,
 	}
+	format, err := resolveFormat(outputFormat, outputFilePath)
+	if err != nil {
+		return err
+	}
 	return runConversion(
 		inputFilePath, outputFilePath,
 		smartypants, latexdashes, fractions, safeMode, css,
+		format, pageSize, marginFlag,
 	)
 }

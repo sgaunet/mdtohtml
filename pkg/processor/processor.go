@@ -13,9 +13,12 @@ type BatchProcessor interface {
 	ProcessDirectory(dir string, options ProcessOptions) error
 }
 
+// DefaultOutputExt is the default extension applied when ProcessOptions.OutputExt is empty.
+const DefaultOutputExt = ".html"
+
 // ProcessOptions configures batch processing behavior.
 type ProcessOptions struct {
-	// OutputDir is the directory where HTML files will be written
+	// OutputDir is the directory where converted files will be written
 	OutputDir string
 
 	// Pattern is the file pattern to match (e.g., "*.md")
@@ -23,6 +26,10 @@ type ProcessOptions struct {
 
 	// Recursive determines if subdirectories should be processed
 	Recursive bool
+
+	// OutputExt is the extension applied to converted files (e.g., ".html", ".pdf").
+	// Empty defaults to DefaultOutputExt.
+	OutputExt string
 }
 
 // FileInfo represents information about a file to be processed.
@@ -31,14 +38,21 @@ type FileInfo struct {
 	OutputPath string
 }
 
-// GetOutputPath calculates the output path for a given input file.
+// GetOutputPath calculates the output path for a given input file using the
+// default ".html" extension. Use GetOutputPathExt to choose an extension.
 func GetOutputPath(inputFile, inputDir, outputDir string) string {
+	return GetOutputPathExt(inputFile, inputDir, outputDir, DefaultOutputExt)
+}
+
+// GetOutputPathExt is like GetOutputPath but applies the supplied extension
+// (which must include the leading dot, e.g. ".pdf").
+func GetOutputPathExt(inputFile, inputDir, outputDir, ext string) string {
 	relPath, err := filepath.Rel(inputDir, inputFile)
 	if err != nil {
 		relPath = filepath.Base(inputFile)
 	}
 
-	outputFile := relPath[:len(relPath)-len(filepath.Ext(relPath))] + ".html"
+	outputFile := relPath[:len(relPath)-len(filepath.Ext(relPath))] + ext
 	return filepath.Join(outputDir, outputFile)
 }
 

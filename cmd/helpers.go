@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 var (
@@ -27,7 +29,38 @@ var (
 	errConflictingCSS = errors.New("--no-css cannot be combined with --css-file or --css-url")
 	// errBothCSSSourcesProvided is returned when both --css-file and --css-url are set.
 	errBothCSSSourcesProvided = errors.New("--css-file and --css-url are mutually exclusive")
+	// errUnknownFormat is returned when --format is set to an unrecognised value.
+	errUnknownFormat = errors.New("unknown --format value (expected html or pdf)")
 )
+
+// resolveFormat returns the output format to use. If explicit is non-empty it
+// must match a recognised format; otherwise the format is inferred from the
+// output file's extension (.pdf → pdf, anything else → html).
+func resolveFormat(explicit, outputPath string) (string, error) {
+	if explicit != "" {
+		switch strings.ToLower(explicit) {
+		case formatHTML:
+			return formatHTML, nil
+		case formatPDF:
+			return formatPDF, nil
+		default:
+			return "", fmt.Errorf("%w: %s", errUnknownFormat, explicit)
+		}
+	}
+	if strings.EqualFold(filepath.Ext(outputPath), ".pdf") {
+		return formatPDF, nil
+	}
+	return formatHTML, nil
+}
+
+// extForFormat returns the file extension that batch processing should append
+// for the given output format.
+func extForFormat(format string) string {
+	if format == formatPDF {
+		return ".pdf"
+	}
+	return ".html"
+}
 
 // validateInputFile checks that path exists and is a regular file.
 func validateInputFile(path string) error {

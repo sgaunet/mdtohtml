@@ -43,6 +43,12 @@ func init() {
 	batchCmd.Flags().StringVar(&cssURL, "css-url", "", "URL to fetch CSS from instead of the default GitHub CSS")
 	batchCmd.Flags().StringVar(&additionalCSSFile, "additional-css", "", "Path to a CSS file to append to the default CSS")
 	batchCmd.Flags().BoolVar(&noCSS, "no-css", false, "Disable CSS injection entirely")
+	batchCmd.Flags().StringVar(&outputFormat, "format", formatHTML,
+		`Output format: "html" or "pdf"`)
+	batchCmd.Flags().StringVar(&pageSize, "page-size", "A4",
+		`PDF page size when --format=pdf: A4, Letter, Legal, A3, A5, Tabloid`)
+	batchCmd.Flags().StringVar(&marginFlag, "margin", defaultMarginFlag,
+		`PDF page margin (units: pt, in, cm, mm; bare numbers = pt)`)
 }
 
 func batchConvert(_ *cobra.Command, args []string) error {
@@ -70,14 +76,22 @@ func batchConvert(_ *cobra.Command, args []string) error {
 		NoCSS:            noCSS,
 	}
 
-	conv := converter.NewCompleteConverter(options)
+	format, err := resolveFormat(outputFormat, "")
+	if err != nil {
+		return err
+	}
+
+	conv, err := buildConverter(options, format, pageSize, marginFlag)
+	if err != nil {
+		return err
+	}
 	proc := processor.NewFileProcessor(conv)
 
-	// Process directory
 	processOptions := processor.ProcessOptions{
 		OutputDir: outputDir,
 		Pattern:   pattern,
 		Recursive: recursive,
+		OutputExt: extForFormat(format),
 	}
 
 	if err := proc.ProcessDirectory(inputDir, processOptions); err != nil {

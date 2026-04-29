@@ -1,0 +1,45 @@
+name: validate
+vars:
+  bin: ./mdtohtml
+  fix: tst/integration/fixtures
+testcases:
+  - name: well-formed markdown reports valid
+    steps:
+      - type: exec
+        script: '{{.bin}} validate {{.fix}}/simple/headings.md'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "is valid Markdown"
+          - result.systemerr ShouldBeEmpty
+
+  - name: tables are valid markdown
+    steps:
+      - type: exec
+        script: '{{.bin}} validate {{.fix}}/tables/tables.md'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "is valid Markdown"
+
+  - name: empty file is valid
+    steps:
+      - type: exec
+        script: '{{.bin}} validate {{.fix}}/invalid/empty.md'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "is valid Markdown"
+
+  - name: nonexistent file returns exit 1
+    steps:
+      - type: exec
+        script: '{{.bin}} validate {{.fix}}/does-not-exist.md'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "input file not found"
+
+  - name: directory passed to validate returns exit 1
+    steps:
+      - type: exec
+        script: '{{.bin}} validate {{.fix}}/simple'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "input path is a directory"

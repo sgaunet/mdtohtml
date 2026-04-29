@@ -22,6 +22,19 @@ tasks:
       - go mod download
       - CGO_ENABLED=0 go build .
 
+  integration:
+    desc: "Run venom integration tests"
+    deps: [build]
+    cmds:
+      - rm -rf $PWD/results
+      - mkdir -p $PWD/results
+      - >-
+        venom run tst/integration/testsuite-*.yml
+        --var=bin={{.ROOT_DIR}}/{{.BINFILE}}
+        --var=fix={{.ROOT_DIR}}/tst/integration/fixtures
+        --output-dir=$PWD/results
+        --stop-on-failure
+
   snapshot:
     cmds:
       - GITLAB_TOKEN="" goreleaser --clean --snapshot

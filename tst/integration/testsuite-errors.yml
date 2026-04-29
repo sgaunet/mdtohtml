@@ -1,0 +1,100 @@
+name: errors
+vars:
+  bin: ./mdtohtml
+  out: /tmp/mdth-it/errors
+  fix: tst/integration/fixtures
+testcases:
+  - name: setup
+    steps:
+      - type: exec
+        script: 'rm -rf {{.out}} && mkdir -p {{.out}}'
+        assertions:
+          - result.code ShouldEqual 0
+
+  - name: convert with no arguments fails with usage error
+    steps:
+      - type: exec
+        script: '{{.bin}} convert'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "accepts 2 arg"
+
+  - name: convert with one argument fails
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/simple/headings.md'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "accepts 2 arg"
+
+  - name: batch with no arguments fails
+    steps:
+      - type: exec
+        script: '{{.bin}} batch'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "accepts 1 arg"
+
+  - name: validate with no arguments fails
+    steps:
+      - type: exec
+        script: '{{.bin}} validate'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "accepts 1 arg"
+
+  - name: --no-css combined with --css-file is rejected
+    steps:
+      - type: exec
+        script: '{{.bin}} --no-css --css-file={{.fix}}/css/custom.css {{.fix}}/simple/headings.md {{.out}}/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "--no-css cannot be combined"
+
+  - name: --no-css combined with --css-url is rejected
+    steps:
+      - type: exec
+        script: '{{.bin}} --no-css --css-url=https://example.com/x.css {{.fix}}/simple/headings.md {{.out}}/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "--no-css cannot be combined"
+
+  - name: --css-file and --css-url together are rejected
+    steps:
+      - type: exec
+        script: '{{.bin}} --css-file={{.fix}}/css/custom.css --css-url=https://example.com/x.css {{.fix}}/simple/headings.md {{.out}}/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "mutually exclusive"
+
+  - name: unknown --format value is rejected
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=xyz {{.fix}}/simple/headings.md {{.out}}/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "unknown --format value"
+
+  - name: missing --css-file path is rejected
+    steps:
+      - type: exec
+        script: '{{.bin}} --css-file=/tmp/mdth-does-not-exist.css {{.fix}}/simple/headings.md {{.out}}/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldNotBeEmpty
+
+  - name: unsupported scheme in --css-url is rejected
+    steps:
+      - type: exec
+        script: '{{.bin}} --css-url=file:///tmp/foo.css {{.fix}}/simple/headings.md {{.out}}/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "unsupported protocol scheme"
+
+  - name: output written to a non-writable directory fails gracefully
+    steps:
+      - type: exec
+        script: '{{.bin}} {{.fix}}/simple/headings.md /dev/null/sub/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldNotBeEmpty

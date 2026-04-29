@@ -1,0 +1,252 @@
+name: pdf
+vars:
+  bin: ./mdtohtml
+  out: ../../results/pdf
+  fix: tst/integration/fixtures
+testcases:
+  - name: setup
+    steps:
+      - type: exec
+        script: 'rm -rf {{.out}} && mkdir -p {{.out}}'
+        assertions:
+          - result.code ShouldEqual 0
+
+  - name: explicit --format=pdf produces a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/simple/headings.md {{.out}}/explicit.pdf'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'head -c 5 {{.out}}/explicit.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/explicit.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.systemout ShouldContainSubstring "OK"
+      - type: exec
+        script: 'file -b --mime-type {{.out}}/explicit.pdf'
+        assertions:
+          - result.systemout ShouldContainSubstring "application/pdf"
+
+  - name: extension-based auto-detection produces a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} {{.fix}}/simple/headings.md {{.out}}/auto.pdf'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'head -c 5 {{.out}}/auto.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/auto.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: PDF embeds title metadata extracted from first H1
+    steps:
+      - type: exec
+        script: 'grep -aE "/Title \(Heading Level One\)" {{.out}}/explicit.pdf | head -1'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "Heading Level One"
+
+  - name: page-break markdown produces a multi-page PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/multi-page/pagebreak.md {{.out}}/multi.pdf'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'pages=$(grep -ac "/Type[ ]*/Page[^s]" {{.out}}/multi.pdf); echo "pages=$pages"; test "$pages" -ge 2'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "pages=3"
+
+  - name: page-size A4
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=A4 {{.fix}}/simple/headings.md {{.out}}/a4.pdf && head -c 5 {{.out}}/a4.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: page-size Letter
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=Letter {{.fix}}/simple/headings.md {{.out}}/letter.pdf && head -c 5 {{.out}}/letter.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: page-size Legal
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=Legal {{.fix}}/simple/headings.md {{.out}}/legal.pdf && head -c 5 {{.out}}/legal.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: page-size A3
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=A3 {{.fix}}/simple/headings.md {{.out}}/a3.pdf && head -c 5 {{.out}}/a3.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: page-size A5
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=A5 {{.fix}}/simple/headings.md {{.out}}/a5.pdf && head -c 5 {{.out}}/a5.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: page-size Tabloid
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=Tabloid {{.fix}}/simple/headings.md {{.out}}/tab.pdf && head -c 5 {{.out}}/tab.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: page-size lowercase a4 is accepted
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=a4 {{.fix}}/simple/headings.md {{.out}}/a4lc.pdf && head -c 5 {{.out}}/a4lc.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: unknown page-size returns exit 1 with explanatory error
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --page-size=Foo {{.fix}}/simple/headings.md {{.out}}/foo.pdf'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "unknown page size"
+
+  - name: margin in points (bare number)
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --margin=90 {{.fix}}/simple/headings.md {{.out}}/m90.pdf && head -c 5 {{.out}}/m90.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: margin with pt suffix
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --margin=90pt {{.fix}}/simple/headings.md {{.out}}/m90pt.pdf && head -c 5 {{.out}}/m90pt.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: margin in inches
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --margin=1in {{.fix}}/simple/headings.md {{.out}}/min.pdf && head -c 5 {{.out}}/min.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: margin in centimeters
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --margin=2.54cm {{.fix}}/simple/headings.md {{.out}}/mcm.pdf && head -c 5 {{.out}}/mcm.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: margin in millimeters
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --margin=25.4mm {{.fix}}/simple/headings.md {{.out}}/mmm.pdf && head -c 5 {{.out}}/mmm.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: zero margin is accepted
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --margin=0 {{.fix}}/simple/headings.md {{.out}}/m0.pdf && head -c 5 {{.out}}/m0.pdf | grep -q "%PDF-" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: negative margin returns exit 1
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf --margin=-1in {{.fix}}/simple/headings.md {{.out}}/neg.pdf'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "must be non-negative"
+
+  - name: paragraph fixture renders to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/simple/paragraph.md {{.out}}/paragraph.pdf && head -c 5 {{.out}}/paragraph.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/paragraph.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: lists fixture renders to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/simple/lists.md {{.out}}/lists.pdf && head -c 5 {{.out}}/lists.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/lists.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: tables fixture renders to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/tables/tables.md {{.out}}/tables.pdf && head -c 5 {{.out}}/tables.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/tables.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: smartypants typography renders to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/typography/smarty.md {{.out}}/smarty.pdf && head -c 5 {{.out}}/smarty.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/smarty.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: fenced code blocks render to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/code/fenced.md {{.out}}/fenced.pdf && head -c 5 {{.out}}/fenced.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/fenced.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+      - type: exec
+        script: 'grep -ao "/BaseFont /Courier" {{.out}}/fenced.pdf | head -1'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "/BaseFont /Courier"
+
+  - name: inline code renders to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/code/inline.md {{.out}}/inline.pdf && head -c 5 {{.out}}/inline.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/inline.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+      - type: exec
+        script: 'grep -ao "/BaseFont /Courier" {{.out}}/inline.pdf | head -1'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "/BaseFont /Courier"
+
+  - name: markdown with embedded image renders to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/images/img.md {{.out}}/img.pdf && head -c 5 {{.out}}/img.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/img.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"
+
+  - name: unsafe HTML markdown renders to a valid PDF
+    steps:
+      - type: exec
+        script: '{{.bin}} --format=pdf {{.fix}}/unsafe-html/script.md {{.out}}/unsafe.pdf && head -c 5 {{.out}}/unsafe.pdf | grep -q "%PDF-" && tail -c 6 {{.out}}/unsafe.pdf | grep -q "%%EOF" && echo OK'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "OK"

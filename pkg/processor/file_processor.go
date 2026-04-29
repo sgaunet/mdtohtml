@@ -53,9 +53,13 @@ func (p *FileProcessor) ProcessDirectory(dir string, options ProcessOptions) err
 	}
 
 	// Process each file
+	ext := options.OutputExt
+	if ext == "" {
+		ext = DefaultOutputExt
+	}
 	fmt.Printf("Converting %d files...\n", len(files))
 	for _, file := range files {
-		if err := p.processFile(file, dir, options.OutputDir); err != nil {
+		if err := p.processFile(file, dir, options.OutputDir, ext); err != nil {
 			return fmt.Errorf("batch processing '%s': %w", dir, err)
 		}
 	}
@@ -99,8 +103,8 @@ func (p *FileProcessor) findFilesRecursive(dir, pattern string) ([]string, error
 	return files, nil
 }
 
-func (p *FileProcessor) processFile(file, inputDir, outputDir string) error {
-	outputPath := GetOutputPath(file, inputDir, outputDir)
+func (p *FileProcessor) processFile(file, inputDir, outputDir, ext string) error {
+	outputPath := GetOutputPathExt(file, inputDir, outputDir, ext)
 
 	if err := ValidateOutputPath(outputPath, outputDir); err != nil {
 		return err
