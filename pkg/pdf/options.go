@@ -95,7 +95,7 @@ func ParseMargin(s string) (float64, error) {
 
 // splitMargin separates the numeric portion of a margin value from its
 // trailing unit suffix. The unit is returned lowercased.
-func splitMargin(s string) (num, unit string) {
+func splitMargin(s string) (string, string) {
 	for i, r := range s {
 		if (r >= '0' && r <= '9') || r == '.' || r == '-' || r == '+' {
 			continue
