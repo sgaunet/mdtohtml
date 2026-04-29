@@ -1,0 +1,190 @@
+name: convert
+vars:
+  bin: ./mdtohtml
+  out: /tmp/mdth-it/convert
+  fix: tst/integration/fixtures
+testcases:
+  - name: setup
+    steps:
+      - type: exec
+        script: 'rm -rf {{.out}} && mkdir -p {{.out}}'
+        assertions:
+          - result.code ShouldEqual 0
+
+  - name: simple-headings produces valid HTML with extracted title
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/simple/headings.md {{.out}}/headings.html'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemerr ShouldBeEmpty
+      - type: exec
+        script: 'cat {{.out}}/headings.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "<!DOCTYPE html>"
+          - result.systemout ShouldContainSubstring "<title>Heading Level One</title>"
+          - result.systemout ShouldContainSubstring "<style>"
+          - result.systemout ShouldContainSubstring "octicon"
+          - result.systemout ShouldContainSubstring "<h1"
+          - result.systemout ShouldContainSubstring "<h6"
+
+  - name: paragraph without H1 has empty title
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/simple/paragraph.md {{.out}}/paragraph.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/paragraph.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "<title></title>"
+
+  - name: lists render with ul ol and task-list classes
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/simple/lists.md {{.out}}/lists.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/lists.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "<ul>"
+          - result.systemout ShouldContainSubstring "<ol>"
+          - result.systemout ShouldContainSubstring "task-list-item"
+
+  - name: tables render with th and table tags
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/tables/tables.md {{.out}}/tables.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/tables.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "<table>"
+          - result.systemout ShouldContainSubstring "<th"
+          - result.systemout ShouldContainSubstring "Alice"
+
+  - name: fenced code block uses language class
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/code/fenced.md {{.out}}/fenced.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/fenced.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "language-go"
+          - result.systemout ShouldContainSubstring "language-python"
+          - result.systemout ShouldContainSubstring "fmt.Println"
+
+  - name: image markdown produces img tag with src
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/images/img.md {{.out}}/img.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/img.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "<img"
+          - result.systemout ShouldContainSubstring "assets/logo.svg"
+
+  - name: --no-css strips the style block
+    steps:
+      - type: exec
+        script: '{{.bin}} --no-css convert {{.fix}}/simple/headings.md {{.out}}/nocss.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/nocss.html'
+        assertions:
+          - result.systemout ShouldNotContainSubstring "<style>"
+          - result.systemout ShouldContainSubstring "<title>Heading Level One</title>"
+
+  - name: --css-file replaces default CSS with custom styles
+    steps:
+      - type: exec
+        script: '{{.bin}} --css-file={{.fix}}/css/custom.css convert {{.fix}}/simple/headings.md {{.out}}/cssfile.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/cssfile.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "#abcdef"
+          - result.systemout ShouldNotContainSubstring "octicon"
+
+  - name: --additional-css appends to default CSS
+    steps:
+      - type: exec
+        script: '{{.bin}} --additional-css={{.fix}}/css/custom.css convert {{.fix}}/simple/headings.md {{.out}}/addcss.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/addcss.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "#abcdef"
+          - result.systemout ShouldContainSubstring "octicon"
+
+  - name: --safe-mode strips raw script and iframe tags
+    steps:
+      - type: exec
+        script: '{{.bin}} --safe-mode {{.fix}}/unsafe-html/script.md {{.out}}/safe.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/safe.html'
+        assertions:
+          - result.systemout ShouldNotContainSubstring "<script>alert"
+          - result.systemout ShouldNotContainSubstring "<iframe"
+          - result.systemout ShouldContainSubstring "raw HTML omitted"
+
+  - name: without --safe-mode raw HTML passes through
+    steps:
+      - type: exec
+        script: '{{.bin}} {{.fix}}/unsafe-html/script.md {{.out}}/unsafe.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/unsafe.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "<script>alert"
+          - result.systemout ShouldContainSubstring "<iframe"
+
+  - name: smartypants converts quotes dashes and ellipsis to entities
+    steps:
+      - type: exec
+        script: '{{.bin}} {{.fix}}/typography/smarty.md {{.out}}/smarty.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/smarty.html'
+        assertions:
+          - result.systemout ShouldContainSubstring "&ldquo;"
+          - result.systemout ShouldContainSubstring "&rdquo;"
+          - result.systemout ShouldContainSubstring "&ndash;"
+          - result.systemout ShouldContainSubstring "&mdash;"
+          - result.systemout ShouldContainSubstring "&hellip;"
+
+  - name: smartypants disabled preserves raw punctuation
+    steps:
+      - type: exec
+        script: '{{.bin}} --smartypants=false --latexdashes=false --fractions=false {{.fix}}/typography/smarty.md {{.out}}/smarty-raw.html'
+        assertions:
+          - result.code ShouldEqual 0
+      - type: exec
+        script: 'cat {{.out}}/smarty-raw.html'
+        assertions:
+          - result.systemout ShouldNotContainSubstring "&ldquo;"
+          - result.systemout ShouldNotContainSubstring "&mdash;"
+          - result.systemout ShouldNotContainSubstring "&hellip;"
+          - result.systemout ShouldContainSubstring "---"
+          - result.systemout ShouldContainSubstring "..."
+
+  - name: nonexistent input returns exit 1 with stderr
+    steps:
+      - type: exec
+        script: '{{.bin}} convert {{.fix}}/does-not-exist.md {{.out}}/x.html'
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemerr ShouldContainSubstring "input file not found"

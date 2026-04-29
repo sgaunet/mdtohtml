@@ -1,0 +1,67 @@
+name: flags
+vars:
+  bin: ./mdtohtml
+  fix: tst/integration/fixtures
+testcases:
+  - name: --version prints the version string and exits 0
+    steps:
+      - type: exec
+        script: '{{.bin}} --version'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "development"
+
+  - name: -v short flag prints the version string
+    steps:
+      - type: exec
+        script: '{{.bin}} -v'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "development"
+
+  - name: --help lists all subcommands
+    steps:
+      - type: exec
+        script: '{{.bin}} --help'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "convert"
+          - result.systemout ShouldContainSubstring "batch"
+          - result.systemout ShouldContainSubstring "validate"
+          - result.systemout ShouldContainSubstring "completion"
+
+  - name: batch --help describes its specific flags
+    steps:
+      - type: exec
+        script: '{{.bin}} batch --help'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "--out-dir"
+          - result.systemout ShouldContainSubstring "--pattern"
+          - result.systemout ShouldContainSubstring "--recursive"
+
+  - name: convert --help describes core flags
+    steps:
+      - type: exec
+        script: '{{.bin}} convert --help'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "smartypants"
+          - result.systemout ShouldContainSubstring "css-file"
+
+  - name: validate --help describes validate flags only
+    steps:
+      - type: exec
+        script: '{{.bin}} validate --help'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "smartypants"
+          - result.systemout ShouldNotContainSubstring "out-dir"
+
+  - name: completion bash is generated to stdout
+    steps:
+      - type: exec
+        script: '{{.bin}} completion bash'
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "bash completion"

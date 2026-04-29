@@ -1,0 +1,1 @@
+This is a plain text file. The default --pattern '*.md' should skip it.

@@ -30,4 +30,10 @@ func init() {
 	convertCmd.Flags().StringVar(&additionalCSSFile, "additional-css", "",
 		"Path to a CSS file to append to the default CSS")
 	convertCmd.Flags().BoolVar(&noCSS, "no-css", false, "Disable CSS injection entirely")
+	convertCmd.Flags().StringVar(&outputFormat, "format", "",
+		`Output format: "html" or "pdf" (default: auto-detect from output file extension)`)
+	convertCmd.Flags().StringVar(&pageSize, "page-size", "A4",
+		`PDF page size when --format=pdf: A4, Letter, Legal, A3, A5, Tabloid`)
+	convertCmd.Flags().StringVar(&marginFlag, "margin", defaultMarginFlag,
+		`PDF page margin (units: pt, in, cm, mm; bare numbers = pt)`)
 }

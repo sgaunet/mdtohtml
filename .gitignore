@@ -1,2 +1,4 @@
 /dist
 /mdtohtml
+.DS_Store
+/results
