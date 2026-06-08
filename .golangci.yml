@@ -8,6 +8,7 @@ linters:
   default: all
 
   disable:
+    - gomodguard # deprecated; gomodguard_v2 is enabled via default: all
     - wsl
     - wsl_v5
     - nlreturn

@@ -100,7 +100,7 @@ func (c *Converter) Convert(input []byte) ([]byte, error) {
 }
 
 // ConvertFile reads a Markdown file and writes the PDF to outputPath. The
-// input file's directory is wired into folio's BasePath so relative image
+// input file's directory is wired into folio's BaseFS so relative image
 // references (e.g. ./img/foo.png) resolve correctly.
 func (c *Converter) ConvertFile(inputPath, outputPath string) error {
 	input, err := os.ReadFile(inputPath)
@@ -131,9 +131,16 @@ func (c *Converter) ConvertFile(inputPath, outputPath string) error {
 }
 
 // renderPDF runs folio's HTML→PDF stage, applying any @page configuration
-// found in the source HTML and forwarding the document title metadata.
+// found in the source HTML and forwarding the document title metadata. A
+// non-empty basePath is wrapped in os.DirFS so folio resolves relative asset
+// references from the input file's directory; an empty basePath leaves BaseFS
+// nil, so relative references fail (the document must inline its assets).
 func (c *Converter) renderPDF(htmlStr, basePath string) (*folio.Document, error) {
-	result, err := folioHTML.ConvertFull(htmlStr, &folioHTML.Options{BasePath: basePath})
+	opts := &folioHTML.Options{}
+	if basePath != "" {
+		opts.BaseFS = os.DirFS(basePath)
+	}
+	result, err := folioHTML.ConvertFull(htmlStr, opts)
 	if err != nil {
 		return nil, fmt.Errorf("HTML to PDF: %w", err)
 	}
