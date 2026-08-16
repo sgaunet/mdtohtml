@@ -1,4 +1,3 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/sgaunet/mdtohtml)](https://goreportcard.com/report/github.com/sgaunet/mdtohtml)
 [![GitHub release](https://img.shields.io/github/release/sgaunet/mdtohtml.svg)](https://github.com/sgaunet/mdtohtml/releases/latest)
 ![Test Coverage](https://raw.githubusercontent.com/wiki/sgaunet/mdtohtml/coverage-badge.svg)
 [![coverage](https://github.com/sgaunet/mdtohtml/actions/workflows/coverage.yml/badge.svg)](https://github.com/sgaunet/mdtohtml/actions/workflows/coverage.yml)
