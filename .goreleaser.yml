@@ -87,23 +87,41 @@ dockers:
     #   - go.mod
     #   - go.sum
 
-brews:
-  - homepage: 'https://github.com/sgaunet/mdtohtml'
-    description: 'A simple and efficient Markdown to HTML converter'
-    directory: Formula
+# Homebrew cask publishing (replaces the deprecated `brews:` block; casks are
+# what GoReleaser supports going forward)
+homebrew_casks:
+  - name: mdtohtml
+    homepage: 'https://github.com/sgaunet/mdtohtml'
+    description: 'Simple and efficient Markdown to HTML converter'
+
+    # Tap repository directory (casks live in Casks/, not Formula/)
+    directory: Casks
+
+    # Command name users invoke, mapped from the artifact name.
+    binaries:
+      - mdtohtml
+
+    # Download URL of the release artifact.
+    url:
+      template: 'https://github.com/sgaunet/mdtohtml/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+
+    # Strip the Gatekeeper quarantine xattr so the installed binary can run.
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}"]
+          end
+
     commit_author:
       name: sgaunet
       email: 1552102+sgaunet@users.noreply.github.com
+
     repository:
       owner: sgaunet
       name: homebrew-tools
       # Token with 'repo' scope is required for pushing to a different repository
       token: '{{ .Env.HOMEBREW_TAP_TOKEN }}'
-    url_template: 'https://github.com/sgaunet/mdtohtml/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
-    install: |
-      bin.install "mdtohtml"
-    test: |
-      system "#{bin}/mdtohtml", "--help"
 
 # .goreleaser.yaml
 nfpms:
