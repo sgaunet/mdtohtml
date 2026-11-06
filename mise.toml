@@ -2,6 +2,6 @@
 go = "1.27.3"
 task = "3.40.1"
 golangci-lint = "2.15.0"
-goreleaser = "2.16.0"
+goreleaser = "2.20.0"
 "go:golang.org/x/vuln/cmd/govulncheck" = "1.6.0"
 "go:golang.org/x/tools/gopls" = "0.23.0"
